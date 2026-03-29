@@ -17,6 +17,7 @@ SOURCES += \
     parser.c
 
 HEADERS += \
+    appcontext.h \
     demography_record.h \
     file_loader.h \
     iterator.h \

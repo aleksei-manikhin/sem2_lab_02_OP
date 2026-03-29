@@ -3,6 +3,7 @@
 
 #include "list.h"
 #include "parser.h"
+#include "appcontext.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,20 +11,7 @@ extern "C" {
 
 #define LINE_SIZE 1024
 
-typedef struct {
-    size_t totalRows;
-    size_t validRows;
-    size_t invalidRows;
-} ParseInfo;
-
-typedef enum {
-    PARSER_OK,
-    PARSER_FILE_ERROR,
-    PARSER_HEADER_ERROR,
-    PARSER_MEMORY_ERROR
-} ParserError;
-
-ParserError loadDemographyData(const char* filePath, List* list, ParseInfo* info);
+Status loadDemographyData(const char* filePath, List* list, ParseInfo* info);
 
 #ifdef __cplusplus
 }

@@ -2,15 +2,15 @@
 
 #include <stdio.h>
 
-ParserError processLines(FILE* file, List* list, ParseInfo* info);
+Status processLines(FILE* file, List* list, ParseInfo* info);
 
-ParserError loadDemographyData(const char* filePath, List* list, ParseInfo* info) {
-  ParserError error = PARSER_OK;
+Status loadDemographyData(const char* filePath, List* list, ParseInfo* info) {
+  Status error = STATUS_OK;
   FILE* file = NULL;
   char buffer[LINE_SIZE];
 
   if (filePath == NULL || list == NULL || info == NULL) {
-    error = PARSER_FILE_ERROR;
+    error = ERR_FILE_OPEN;
   } else {
     info->totalRows = 0;
     info->validRows = 0;
@@ -19,10 +19,10 @@ ParserError loadDemographyData(const char* filePath, List* list, ParseInfo* info
     file = fopen(filePath, "r");
 
     if (file == NULL) {
-      error = PARSER_FILE_ERROR;
+      error = ERR_FILE_OPEN;
     } else {
       if (fgets(buffer, sizeof(buffer), file) == NULL || !validateCsvHeader(buffer)) {
-        error = PARSER_HEADER_ERROR;
+        error = ERR_INVALID_HEADER;
       } else {
         error = processLines(file, list, info);
       }
@@ -34,8 +34,8 @@ ParserError loadDemographyData(const char* filePath, List* list, ParseInfo* info
   return error;
 }
 
-ParserError processLines(FILE* file, List* list, ParseInfo* info) {
-  ParserError error = PARSER_OK;
+Status processLines(FILE* file, List* list, ParseInfo* info) {
+  Status error = STATUS_OK;
   char buffer[LINE_SIZE];
   DemographyRecord record;
 
@@ -46,7 +46,7 @@ ParserError processLines(FILE* file, List* list, ParseInfo* info) {
       if (pushBack(list, &record)) {
         info->validRows++;
       } else {
-        error = PARSER_MEMORY_ERROR;
+        error = MEMORY_ERR;
         break;
       }
     } else {
