@@ -18,9 +18,10 @@ HEADERS += \
 FORMS += \
     mainwindow.ui
 
-DISTFILES += \
-    README.md \
-    russian_demography.csv
+#DISTFILES += \
+#    README.md \
+#    russian_demography.csv
+#    empty.csv
 
 
 # Default rules for deployment.

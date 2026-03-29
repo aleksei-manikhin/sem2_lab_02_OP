@@ -7,13 +7,14 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
-    ui->tableWidget->setColumnCount(7);
-    ui->tableWidget->setRowCount(5);
-
     ui->tableWidget->setHorizontalHeaderLabels(
         {"Year", "Region", "Growth", "Birth", "Death", "Weight", "Urban"});
 
+
+
+
+    //Заглушка таблицы
+    ui->tableWidget->setRowCount(5);
     QStringList regions = {
         "Republic of Adygea",
         "Moscow",
@@ -32,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
         ui->tableWidget->setItem(row, 5, new QTableWidgetItem(QString::number(1.2 + row)));
         ui->tableWidget->setItem(row, 6, new QTableWidgetItem(QString::number(62 + row)));
     }
-
+    //Конец заглушки таблицы
 
 }
 
