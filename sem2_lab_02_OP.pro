@@ -13,6 +13,7 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
+    demography_record.h \
     mainwindow.h
 
 FORMS += \
