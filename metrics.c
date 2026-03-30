@@ -5,14 +5,14 @@
 #include "iterator.h"
 #include "list.h"
 
-int isMetricColumn(Column column);
+int isNumericColumn(Column column);
 int compareDoubleValues(const void* left, const void* right);
 Status validateMetricsInput(const AppContext* context, const char* region, Column column);
 double getColumnValue(const DemographyRecord* record, Column column);
 int insertRegionValues(const AppContext* context, const char* region, Column column, List* sortedValues);
 void fillMetricsFromSorted(Metrics* metrics, const List* sortedValues);
 
-int isMetricColumn(Column column) {
+int isNumericColumn(Column column) {
   int isValid = 0;
 
   if (column >= COL_YEAR && column <= COL_URBANIZATION && column != COL_REGION)
@@ -39,7 +39,7 @@ Status validateMetricsInput(const AppContext* context, const char* region, Colum
 
   if (context == NULL || context->list == NULL || region == NULL)
     status = ERR_EMPTY_DATA;
-  else if (!isMetricColumn(column))
+  else if (!isNumericColumn(column))
     status = ERR_INVALID_COLUMN;
 
   return status;
@@ -50,13 +50,20 @@ double getColumnValue(const DemographyRecord* record, Column column) {
 
   if (record != NULL) {
     switch (column) {
-      case COL_YEAR: value = (double)record->year; break;
-      case COL_NPG: value = record->naturalPopulationGrowth; break;
-      case COL_BIRTH_RATE: value = record->birthRate; break;
-      case COL_DEATH_RATE: value = record->deathRate; break;
-      case COL_GDW: value = record->generalDemographicWeight; break;
-      case COL_URBANIZATION: value = record->urbanization; break;
-      default: break;
+      case COL_YEAR: value = (double)record->year;
+      break;
+      case COL_NPG: value = record->naturalPopulationGrowth;
+      break;
+      case COL_BIRTH_RATE: value = record->birthRate;
+      break;
+      case COL_DEATH_RATE: value = record->deathRate;
+      break;
+      case COL_GDW: value = record->generalDemographicWeight;
+      break;
+      case COL_URBANIZATION: value = record->urbanization;
+      break;
+      default:
+      break;
     }
   }
 
@@ -81,7 +88,7 @@ int insertRegionValues(const AppContext* context, const char* region, Column col
 }
 
 void fillMetricsFromSorted(Metrics* metrics, const List* sortedValues) {
-  size_t targetIndex = sortedValues->size / 2;
+  size_t middleIndex = sortedValues->size / 2;
   size_t index = 0;
   double prevValue = 0.0;
   double currentValue = 0.0;
@@ -90,7 +97,7 @@ void fillMetricsFromSorted(Metrics* metrics, const List* sortedValues) {
   metrics->min = *(double*)sortedValues->head->data;
   metrics->max = *(double*)sortedValues->tail->data;
 
-  while (isSet(&it) && index <= targetIndex) {
+  while (isSet(&it) && index <= middleIndex) {
     prevValue = currentValue;
     currentValue = *(double*)get(&it);
     index++;
@@ -117,15 +124,10 @@ Status calculateMetrics(AppContext* context, const char* region, Column column) 
       status = ERR_INVALID_REGION;
     else
       fillMetricsFromSorted(&context->metrics, sortedValues);
+    disposeList(sortedValues);
   }
 
-  if (sortedValues != NULL)
-    disposeList(sortedValues);
-
-  if (status == STATUS_OK)//
-    context->status = STATUS_OK;
-  else
-    context->status = status;
+  context->status = status;
 
   return status;
 }
