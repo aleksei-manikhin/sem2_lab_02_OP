@@ -84,3 +84,30 @@ int pushBack(List* list, const void* data) {
   return result;
 }
 
+int insertSorted(List* list, const void* data, int (*cmp)(const void*, const void*)) {
+  int result = 0;
+  Node* node = NULL;
+  Node* current = NULL;
+
+  if (list && data && cmp && (node = createNode(list->dataSize, data))) {
+    result = 1;
+    if (list->head == NULL || cmp(data, list->head->data) <= 0) {
+      node->next = list->head;
+      list->head = node;
+      list->tail = (list->tail == NULL) ? node : list->tail;
+    } else {
+      current = list->head;
+      while (current->next != NULL && cmp(data, current->next->data) > 0)
+        current = current->next;
+
+      node->next = current->next;
+      current->next = node;
+      list->tail = (node->next == NULL) ? node : list->tail;
+    }
+
+    list->size++;
+  }
+
+  return result;
+}
+

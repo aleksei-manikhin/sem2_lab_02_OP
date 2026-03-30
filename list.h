@@ -23,6 +23,7 @@ List* initList(size_t dataSize);
 void disposeList(List* list);
 void clearList(List* list);
 int pushBack(List* list, const void* data);
+int insertSorted(List* list, const void* data, int (*cmp)(const void*, const void*));
 
 
 #ifdef __cplusplus

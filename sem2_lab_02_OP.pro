@@ -14,7 +14,8 @@ SOURCES += \
     list.c \
     main.cpp \
     mainwindow.cpp \
-    parser.c
+    parser.c \
+    metrics.c
 
 HEADERS += \
     appcontext.h \
@@ -23,7 +24,8 @@ HEADERS += \
     iterator.h \
     list.h \
     mainwindow.h \
-    parser.h
+    parser.h \
+    metrics.h
 
 FORMS += \
     mainwindow.ui
