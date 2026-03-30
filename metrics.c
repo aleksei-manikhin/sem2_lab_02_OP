@@ -8,9 +8,8 @@
 int isMetricColumn(Column column);
 int compareDoubleValues(const void* left, const void* right);
 Status validateMetricsInput(const AppContext* context, const char* region, Column column);
-int getColumnValue(const DemographyRecord* record, Column column, double* value);
+double getColumnValue(const DemographyRecord* record, Column column);
 int insertRegionValues(const AppContext* context, const char* region, Column column, List* sortedValues);
-int readValueAt(const List* sortedValues, size_t targetIndex, double* value);
 void fillMetricsFromSorted(Metrics* metrics, const List* sortedValues);
 
 int isMetricColumn(Column column) {
@@ -46,22 +45,22 @@ Status validateMetricsInput(const AppContext* context, const char* region, Colum
   return status;
 }
 
-int getColumnValue(const DemographyRecord* record, Column column, double* value) {
-  int isSuccess = 0;
+double getColumnValue(const DemographyRecord* record, Column column) {
+  double value = 0.0;
 
-  if (record != NULL && value != NULL) {
+  if (record != NULL) {
     switch (column) {
-      case COL_YEAR: *value = (double)record->year; isSuccess = 1; break;
-      case COL_NPG: *value = record->naturalPopulationGrowth; isSuccess = 1; break;
-      case COL_BIRTH_RATE: *value = record->birthRate; isSuccess = 1; break;
-      case COL_DEATH_RATE: *value = record->deathRate; isSuccess = 1; break;
-      case COL_GDW: *value = record->generalDemographicWeight; isSuccess = 1; break;
-      case COL_URBANIZATION: *value = record->urbanization; isSuccess = 1; break;
+      case COL_YEAR: value = (double)record->year; break;
+      case COL_NPG: value = record->naturalPopulationGrowth; break;
+      case COL_BIRTH_RATE: value = record->birthRate; break;
+      case COL_DEATH_RATE: value = record->deathRate; break;
+      case COL_GDW: value = record->generalDemographicWeight; break;
+      case COL_URBANIZATION: value = record->urbanization; break;
       default: break;
     }
   }
 
-  return isSuccess;
+  return value;
 }
 
 int insertRegionValues(const AppContext* context, const char* region, Column column, List* sortedValues) {
@@ -71,9 +70,8 @@ int insertRegionValues(const AppContext* context, const char* region, Column col
   while (isSet(&it) && isSuccess) {
     DemographyRecord* record = (DemographyRecord*)get(&it);
     if (record != NULL && strcmp(record->region, region) == 0) {
-      double value = 0.0;
-      if (getColumnValue(record, column, &value) &&
-          !insertSorted(sortedValues, &value, compareDoubleValues))
+      double value = getColumnValue(record, column);
+      if (!insertSorted(sortedValues, &value, compareDoubleValues))
         isSuccess = 0;
     }
     next(&it);
@@ -82,34 +80,27 @@ int insertRegionValues(const AppContext* context, const char* region, Column col
   return isSuccess;
 }
 
-int readValueAt(const List* sortedValues, size_t targetIndex, double* value) {
-  int isSuccess = 0;
-  size_t currentIndex = 0;
-  Iterator it = begin(sortedValues);
-
-  while (isSet(&it) && !isSuccess) {
-    if (currentIndex == targetIndex) {
-      *value = *(double*)get(&it);
-      isSuccess = 1;
-    }
-    currentIndex++;
-    next(&it);
-  }
-
-  return isSuccess;
-}
-
 void fillMetricsFromSorted(Metrics* metrics, const List* sortedValues) {
-  size_t leftIndex = (sortedValues->size - 1) / 2;
-  size_t rightIndex = sortedValues->size / 2;
-  double leftValue = 0.0;
-  double rightValue = 0.0;
+  size_t targetIndex = sortedValues->size / 2;
+  size_t index = 0;
+  double prevValue = 0.0;
+  double currentValue = 0.0;
+  Iterator it = begin(sortedValues);
 
   metrics->min = *(double*)sortedValues->head->data;
   metrics->max = *(double*)sortedValues->tail->data;
-  readValueAt(sortedValues, leftIndex, &leftValue);
-  readValueAt(sortedValues, rightIndex, &rightValue);
-  metrics->median = (leftValue + rightValue) / 2.0;
+
+  while (isSet(&it) && index <= targetIndex) {
+    prevValue = currentValue;
+    currentValue = *(double*)get(&it);
+    index++;
+    next(&it);
+  }
+
+  if (sortedValues->size % 2 == 0)
+    metrics->median = (prevValue + currentValue) / 2.0;
+  else
+    metrics->median = currentValue;
 }
 
 Status calculateMetrics(AppContext* context, const char* region, Column column) {
@@ -120,17 +111,21 @@ Status calculateMetrics(AppContext* context, const char* region, Column column) 
     sortedValues = initList(sizeof(double));
     if (sortedValues == NULL)
       status = MEMORY_ERR;
-  }
-  if (status == STATUS_OK && sortedValues != NULL) {
-    if (!insertRegionValues(context, region, column, sortedValues))
+    else if (!insertRegionValues(context, region, column, sortedValues))
       status = MEMORY_ERR;
     else if (sortedValues->size == 0)
       status = ERR_INVALID_REGION;
     else
       fillMetricsFromSorted(&context->metrics, sortedValues);
-    disposeList(sortedValues);
   }
-  context->status = status;
+
+  if (sortedValues != NULL)
+    disposeList(sortedValues);
+
+  if (status == STATUS_OK)//
+    context->status = STATUS_OK;
+  else
+    context->status = status;
 
   return status;
 }
