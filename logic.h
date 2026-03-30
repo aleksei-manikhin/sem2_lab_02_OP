@@ -10,8 +10,8 @@ extern "C" {
 
 void initContext(AppContext* context);
 void disposeContext(AppContext* context);
-Status runLoadDataTask(AppContext* context, const char* filePath);
-Status runCalculateMetricsTask(AppContext* context, const char* region, Column column);
+Status loadData(AppContext* context, const char* filePath);
+Status calculateMetricsForRegion(AppContext* context, const char* region, Column column);
 
 #ifdef __cplusplus
 }
