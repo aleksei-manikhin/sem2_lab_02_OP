@@ -5,12 +5,15 @@
 #include "iterator.h"
 #include "list.h"
 
-typedef struct {
-  const char* region;
-  Column column;
-} MetricsFilter;
+int isMetricColumn(Column column);
+int compareDoubleValues(const void* left, const void* right);
+Status validateMetricsInput(const AppContext* context, const char* region, Column column);
+int getColumnValue(const DemographyRecord* record, Column column, double* value);
+int insertRegionValues(const AppContext* context, const char* region, Column column, List* sortedValues);
+int readValueAt(const List* sortedValues, size_t targetIndex, double* value);
+void fillMetricsFromSorted(Metrics* metrics, const List* sortedValues);
 
-static int isMetricColumn(Column column) {
+int isMetricColumn(Column column) {
   int isValid = 0;
 
   if (column >= COL_YEAR && column <= COL_URBANIZATION && column != COL_REGION)
@@ -19,7 +22,7 @@ static int isMetricColumn(Column column) {
   return isValid;
 }
 
-static int compareDoubleValues(const void* left, const void* right) {
+int compareDoubleValues(const void* left, const void* right) {
   int result = 0;
   double a = *(const double*)left;
   double b = *(const double*)right;
@@ -32,7 +35,7 @@ static int compareDoubleValues(const void* left, const void* right) {
   return result;
 }
 
-static Status validateMetricsInput(const AppContext* context, const char* region, Column column) {
+Status validateMetricsInput(const AppContext* context, const char* region, Column column) {
   Status status = STATUS_OK;
 
   if (context == NULL || context->list == NULL || region == NULL)
@@ -43,7 +46,7 @@ static Status validateMetricsInput(const AppContext* context, const char* region
   return status;
 }
 
-static int getColumnValue(const DemographyRecord* record, Column column, double* value) {
+int getColumnValue(const DemographyRecord* record, Column column, double* value) {
   int isSuccess = 0;
 
   if (record != NULL && value != NULL) {
@@ -61,15 +64,15 @@ static int getColumnValue(const DemographyRecord* record, Column column, double*
   return isSuccess;
 }
 
-static int insertRegionValues(const AppContext* context, const MetricsFilter* filter, List* sortedValues) {
+int insertRegionValues(const AppContext* context, const char* region, Column column, List* sortedValues) {
   int isSuccess = 1;
   Iterator it = begin(context->list);
 
   while (isSet(&it) && isSuccess) {
     DemographyRecord* record = (DemographyRecord*)get(&it);
-    if (record != NULL && strcmp(record->region, filter->region) == 0) {
+    if (record != NULL && strcmp(record->region, region) == 0) {
       double value = 0.0;
-      if (getColumnValue(record, filter->column, &value) &&
+      if (getColumnValue(record, column, &value) &&
           !insertSorted(sortedValues, &value, compareDoubleValues))
         isSuccess = 0;
     }
@@ -79,7 +82,7 @@ static int insertRegionValues(const AppContext* context, const MetricsFilter* fi
   return isSuccess;
 }
 
-static int readValueAt(const List* sortedValues, size_t targetIndex, double* value) {
+int readValueAt(const List* sortedValues, size_t targetIndex, double* value) {
   int isSuccess = 0;
   size_t currentIndex = 0;
   Iterator it = begin(sortedValues);
@@ -96,7 +99,7 @@ static int readValueAt(const List* sortedValues, size_t targetIndex, double* val
   return isSuccess;
 }
 
-static void fillMetricsFromSorted(Metrics* metrics, const List* sortedValues) {
+void fillMetricsFromSorted(Metrics* metrics, const List* sortedValues) {
   size_t leftIndex = (sortedValues->size - 1) / 2;
   size_t rightIndex = sortedValues->size / 2;
   double leftValue = 0.0;
@@ -112,10 +115,6 @@ static void fillMetricsFromSorted(Metrics* metrics, const List* sortedValues) {
 Status calculateMetrics(AppContext* context, const char* region, Column column) {
   Status status = validateMetricsInput(context, region, column);
   List* sortedValues = NULL;
-  MetricsFilter filter;
-
-  filter.region = region;
-  filter.column = column;
 
   if (status == STATUS_OK) {
     sortedValues = initList(sizeof(double));
@@ -123,7 +122,7 @@ Status calculateMetrics(AppContext* context, const char* region, Column column) 
       status = MEMORY_ERR;
   }
   if (status == STATUS_OK && sortedValues != NULL) {
-    if (!insertRegionValues(context, &filter, sortedValues))
+    if (!insertRegionValues(context, region, column, sortedValues))
       status = MEMORY_ERR;
     else if (sortedValues->size == 0)
       status = ERR_INVALID_REGION;

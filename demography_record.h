@@ -19,7 +19,6 @@ typedef struct
 {
     int year;
     char region[REGION_SIZE];
-
     double naturalPopulationGrowth;
     double birthRate;
     double deathRate;
