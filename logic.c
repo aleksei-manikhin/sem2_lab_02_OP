@@ -5,6 +5,8 @@
 
 void clearParseInfo(ParseInfo* parseInfo);
 void clearMetrics(Metrics* metrics);
+Status prepareListForLoad(AppContext* context);
+Status loadAndCheckData(AppContext* context, const char* filePath);
 
 void clearParseInfo(ParseInfo* parseInfo) {
   if (parseInfo != NULL) {
@@ -21,6 +23,23 @@ void clearMetrics(Metrics* metrics) {
     metrics->median = 0.0;
   }
 }
+
+Status prepareListForLoad(AppContext* context) {
+  Status status = STATUS_OK;
+  if (context->list == NULL){
+    if (!(context->list = initList(sizeof(DemographyRecord))))
+      status = MEMORY_ERR;
+  }else
+    clearList(context->list);
+  return status;
+}
+
+
+Status loadAndCheckData(AppContext* context, const char* filePath) {
+  Status status = loadDemographyData(filePath, context->list, &context->parseInfo);
+  return (status == STATUS_OK && context->list->size == 0) ? ERR_EMPTY_DATA : status;
+}
+
 
 void initContext(AppContext* context) {
   if (context != NULL) {
@@ -48,29 +67,17 @@ Status loadData(AppContext* context, const char* filePath) {
 
   if (context == NULL)
     status = ERR_EMPTY_DATA;
+  else if (filePath == NULL)
+    status = ERR_FILE_OPEN;
   else {
-    if (filePath == NULL)
-      status = ERR_FILE_OPEN;
-    else {
-      if (context->list == NULL)
-        context->list = initList(sizeof(DemographyRecord));
-      else
-        clearList(context->list);
+    status = prepareListForLoad(context);
+    clearParseInfo(&context->parseInfo);
+    clearMetrics(&context->metrics);
+    if (status == STATUS_OK)
+      status = loadAndCheckData(context, filePath);
 
-      clearParseInfo(&context->parseInfo);
-      clearMetrics(&context->metrics);
-
-      if (context->list == NULL)
-        status = MEMORY_ERR;
-      else {
-        status = loadDemographyData(filePath, context->list, &context->parseInfo);
-        if (status == STATUS_OK && context->list->size == 0)
-          status = ERR_EMPTY_DATA;
-      }
-    }
     context->status = status;
   }
-
   return status;
 }
 
@@ -83,6 +90,5 @@ Status calculateMetricsForRegion(AppContext* context, const char* region, Column
     status = calculateMetrics(context, region, column);
     context->status = status;
   }
-
   return status;
 }
