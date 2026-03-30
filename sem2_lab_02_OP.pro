@@ -12,6 +12,7 @@ SOURCES += \
     file_loader.c \
     iterator.c \
     list.c \
+    logic.c \
     main.cpp \
     mainwindow.cpp \
     parser.c \
@@ -23,6 +24,7 @@ HEADERS += \
     file_loader.h \
     iterator.h \
     list.h \
+    logic.h \
     mainwindow.h \
     parser.h \
     metrics.h
