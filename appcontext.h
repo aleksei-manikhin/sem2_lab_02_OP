@@ -14,9 +14,9 @@ typedef enum {
 } Status;
 
 typedef struct {
-    size_t validRows;
-    size_t invalidRows;
-} ParseInfo;
+    size_t accepted;
+    size_t rejected;
+} RowCounts;
 
 typedef struct {
     double min;
@@ -26,7 +26,7 @@ typedef struct {
 
 typedef struct {
     List* list;
-    ParseInfo parseInfo;
+    RowCounts parseInfo;
     Status status;
     Metrics metrics;
 } AppContext;

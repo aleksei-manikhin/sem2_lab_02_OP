@@ -49,8 +49,9 @@ double getColumnValue(const DemographyRecord* record, Column column) {
 
   if (record != NULL) {
     switch (column) {
-      case COL_YEAR: value = (double)record->year;
-      break;
+      case COL_YEAR:
+        value = (double)record->year; //
+        break;
       case COL_NPG: value = record->naturalPopulationGrowth;
       break;
       case COL_BIRTH_RATE: value = record->birthRate;

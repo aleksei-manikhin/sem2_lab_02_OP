@@ -3,15 +3,15 @@
 #include "file_loader.h"
 #include "metrics.h"
 
-void clearParseInfo(ParseInfo* parseInfo);
+void clearParseInfo(RowCounts* parseInfo);
 void clearMetrics(Metrics* metrics);
 Status prepareListForLoad(AppContext* context);
 Status loadAndCheckData(AppContext* context, const char* filePath);
 
-void clearParseInfo(ParseInfo* parseInfo) {
+void clearParseInfo(RowCounts* parseInfo) {
   if (parseInfo != NULL) {
-    parseInfo->validRows = 0;
-    parseInfo->invalidRows = 0;
+    parseInfo->accepted = 0;
+    parseInfo->rejected = 0;
   }
 }
 

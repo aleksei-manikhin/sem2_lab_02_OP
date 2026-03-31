@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
     doOperation(INITIALIZE, &context, nullptr);
     setupTable();
     setupConnections();
-    setLoadedState(false);
+    setLoadedState();
     clearMetricFields();
     statusBar()->showMessage(statusText(context.status), STATUS_BAR_MESSAGE_TIMEOUT_MS);
 }
@@ -50,8 +50,12 @@ void MainWindow::setupTable() {
         {"Year", "Region", "Growth", "Birth", "Death", "Weight", "Urban"});
 }
 
-void MainWindow::setLoadedState(bool isLoaded) {
-    dataLoaded = isLoaded;
+int MainWindow::hasLoadedData() const {
+    return (context.list != nullptr && context.list->size > 0);
+}
+
+void MainWindow::setLoadedState() {
+    int isLoaded = hasLoadedData();
     ui->calculateMetricsButton->setEnabled(isLoaded);
     ui->contentStackedWidget->setCurrentWidget(isLoaded ? ui->tablePage : ui->emptyPage);
     if (!isLoaded)
@@ -98,18 +102,18 @@ QString MainWindow::statusText(Status status) const {
 }
 
 void MainWindow::showLoadSummary() {
-    size_t totalRows = context.parseInfo.validRows + context.parseInfo.invalidRows;
+    size_t totalRows = context.parseInfo.accepted + context.parseInfo.rejected;
     QString summary = QString("Total rows: %1\nValid rows: %2\nInvalid rows: %3")
                           .arg(totalRows)
-                          .arg(context.parseInfo.validRows)
-                          .arg(context.parseInfo.invalidRows);
+                          .arg(context.parseInfo.accepted)
+                          .arg(context.parseInfo.rejected);
     QMessageBox::information(this, "Load Result", summary);
 }
 
 
 void MainWindow::fillTable(const QString& regionFilter) {
-    bool isRegionEmpty = regionFilter.trimmed().isEmpty();
-    bool isRegionFound = false;
+    int isRegionEmpty = regionFilter.trimmed().isEmpty() ? 1 : 0;
+    int isRegionFound = 0;
     int row = 0;
     Iterator it;
 
@@ -124,7 +128,7 @@ void MainWindow::fillTable(const QString& regionFilter) {
             QString recordRegion = QString::fromLocal8Bit(record->region);
             if (isRegionEmpty || recordRegion.compare(regionFilter, Qt::CaseInsensitive) == 0) {
                 if (!isRegionEmpty)
-                    isRegionFound = true;
+                    isRegionFound = 1;
                 ui->tableWidget->insertRow(row);
                 ui->tableWidget->setItem(row, COL_YEAR - 1, new QTableWidgetItem(QString::number(record->year)));
                 ui->tableWidget->setItem(row, COL_REGION - 1, new QTableWidgetItem(recordRegion));
@@ -165,12 +169,11 @@ void MainWindow::loadDataClicked() {
     doOperation(LOAD_DATA, &context, &params);
     statusBar()->showMessage(statusText(context.status), STATUS_BAR_MESSAGE_TIMEOUT_MS);
     showLoadSummary();
+    setLoadedState();
 
     if (context.status == OK) {
-        setLoadedState(true);
         fillTable(ui->regionLineEdit->text().trimmed());
     } else {
-        setLoadedState(false);
         clearMetricFields();
     }
 }
@@ -194,7 +197,7 @@ void MainWindow::calculateMetricsClicked() {
 }
 
 void MainWindow::regionEditingFinished() {
-    if (dataLoaded)
+    if (hasLoadedData())
         fillTable(ui->regionLineEdit->text().trimmed());
 }
 

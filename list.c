@@ -49,7 +49,7 @@ Node* createNode(size_t dataSize, const void* data) {
   if (data && dataSize) {
     node = malloc(sizeof(Node));
     if (node) {
-      node->data = malloc(dataSize);
+      node->data = malloc(dataSize); //
       if (node->data) {
         memcpy(node->data, data, dataSize);
         node->next = NULL;

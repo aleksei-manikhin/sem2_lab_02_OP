@@ -11,7 +11,7 @@ extern "C" {
 
 #define LINE_SIZE 1024
 
-Status loadDemographyData(const char* filePath, List* list, ParseInfo* info);
+Status loadDemographyData(const char* filePath, List* list, RowCounts* info);
 
 #ifdef __cplusplus
 }

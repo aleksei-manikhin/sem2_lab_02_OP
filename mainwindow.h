@@ -33,11 +33,11 @@ private:
 
     Ui::MainWindow *ui;
     AppContext context;
-    bool dataLoaded;
 
     void setupConnections();
     void setupTable();
-    void setLoadedState(bool isLoaded);
+    void setLoadedState();
+    int hasLoadedData() const;
     void fillTable(const QString& regionFilter);
     void clearMetricFields();
     void showLoadSummary();

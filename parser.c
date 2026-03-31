@@ -13,23 +13,14 @@ int validateCsvHeader(const char* headerLine) {
 }
 
 int parseDemographyLine(const char* line, DemographyRecord* record) {
-  int scannedFields = 0;
-  int isCorrect = 0;
-
-  if (line != NULL && record != NULL) {
-    scannedFields = sscanf(line, "%d,%127[^,],%lf,%lf,%lf,%lf,%lf",
+  return line != NULL &&
+         record != NULL &&
+          sscanf(line, "%d,%127[^,],%lf,%lf,%lf,%lf,%lf",
                            &record->year,
                            record->region,
                            &record->naturalPopulationGrowth,
                            &record->birthRate,
                            &record->deathRate,
                            &record->generalDemographicWeight,
-                           &record->urbanization);
-
-    if (scannedFields == FIELDS_COUNT) {
-      isCorrect = 1;
-    }
-  }
-
-  return isCorrect;
+                           &record->urbanization) == FIELDS_COUNT;
 }

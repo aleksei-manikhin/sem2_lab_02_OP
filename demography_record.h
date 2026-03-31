@@ -3,7 +3,6 @@
 
 #define REGION_SIZE 128
 
-
 typedef enum {
     COL_YEAR = 1,
     COL_REGION,
