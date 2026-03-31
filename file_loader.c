@@ -21,11 +21,12 @@ Status loadDemographyData(const char* filePath, List* list, ParseInfo* info) {
     if (file == NULL) {
       error = ERR_FILE_OPEN;
     } else {
-      if (fgets(buffer, sizeof(buffer), file) == NULL || !validateCsvHeader(buffer)) {
+      if (fgets(buffer, sizeof(buffer), file) == NULL)
+        error = ERR_EMPTY_DATA;
+      else if (!validateCsvHeader(buffer))
         error = ERR_INVALID_HEADER;
-      } else {
+      else
         error = processLines(file, list, info);
-      }
 
       fclose(file);
     }

@@ -1,27 +1,22 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QClipboard>
 #include <QFileDialog>
+#include <QGuiApplication>
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QStatusBar>
 #include <QTableWidgetItem>
-#include <QByteArray>
 
-enum TableColumn {
-    TABLE_YEAR = 0,
-    TABLE_REGION = 1,
-    TABLE_NPG = 2,
-    TABLE_BIRTH = 3,
-    TABLE_DEATH = 4,
-    TABLE_GDW = 5,
-    TABLE_URBAN = 6
-};
+#include <string>
+
+#define COLUMN_COUNT 7
+#define STATUS_BAR_MESSAGE_TIMEOUT_MS 7000
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , dataLoaded(false)
 {
     ui->setupUi(this);
 
@@ -30,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupConnections();
     setLoadedState(false);
     clearMetricFields();
-    showStatus(context.status);
+    statusBar()->showMessage(statusText(context.status), STATUS_BAR_MESSAGE_TIMEOUT_MS);
 }
 
 MainWindow::~MainWindow()
@@ -44,10 +39,11 @@ void MainWindow::setupConnections() {
     connect(ui->loadDataButton, &QPushButton::clicked, this, &MainWindow::loadDataClicked);
     connect(ui->calculateMetricsButton, &QPushButton::clicked, this, &MainWindow::calculateMetricsClicked);
     connect(ui->regionLineEdit, &QLineEdit::editingFinished, this, &MainWindow::regionEditingFinished);
+    connect(ui->tableWidget, &QTableWidget::itemDoubleClicked, this, &MainWindow::tableItemDoubleClicked);
 }
 
 void MainWindow::setupTable() {
-    ui->tableWidget->setColumnCount(7);
+    ui->tableWidget->setColumnCount(COLUMN_COUNT);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->tableWidget->setHorizontalHeaderLabels(
         {"Year", "Region", "Growth", "Birth", "Death", "Weight", "Urban"});
@@ -63,7 +59,7 @@ void MainWindow::setLoadedState(bool isLoaded) {
 
 void MainWindow::clearMetricFields() {
     ui->minValueLineEdit->clear();
-    ui->maxValueLineEdit_->clear();
+    ui->medianValueLineEdit->clear();
     ui->maxValueLineEdit->clear();
 }
 
@@ -100,34 +96,20 @@ QString MainWindow::statusText(Status status) const {
     return text;
 }
 
-void MainWindow::showStatus(Status status) {
-    QString prefix = (status == STATUS_OK) ? "Status: " : "Error: ";
-    statusBar()->showMessage(prefix + statusText(status), 7000);
-}
-
 void MainWindow::showLoadSummary() {
     QString summary = QString("Total rows: %1\nValid rows: %2\nInvalid rows: %3")
                           .arg(context.parseInfo.totalRows)
                           .arg(context.parseInfo.validRows)
                           .arg(context.parseInfo.invalidRows);
-
-    QMessageBox msg(this);
-    msg.setWindowTitle("Load Result");
-    msg.setText(summary);
-    msg.setIcon(context.status == STATUS_OK ? QMessageBox::Information : QMessageBox::Warning);
-    msg.setStyleSheet(
-        "QMessageBox { background-color: #111111; }"
-        "QLabel { color: #E8E8E8; font-size: 12px; }"
-        "QPushButton { min-width: 90px; padding: 6px; }"
-    );
-    msg.exec();
+    QMessageBox::information(this, "Load Result", summary);
 }
 
-/* Converts loaded records into table rows, with optional region filtering. */
+
 void MainWindow::fillTable(const QString& regionFilter) {
-    Iterator it;
+    bool isRegionEmpty = regionFilter.trimmed().isEmpty();
+    bool isRegionFound = false;
     int row = 0;
-    bool useFilter = !regionFilter.trimmed().isEmpty();
+    Iterator it;
 
     ui->tableWidget->setRowCount(0);
     if (context.list == nullptr)
@@ -137,26 +119,27 @@ void MainWindow::fillTable(const QString& regionFilter) {
     while (isSet(&it)) {
         DemographyRecord* record = (DemographyRecord*)get(&it);
         if (record != nullptr) {
-            QString region = QString::fromUtf8(record->region);
-            bool matches = !useFilter || region.compare(regionFilter, Qt::CaseInsensitive) == 0;
-            if (!matches) {
-                next(&it);
-                continue;
+            QString recordRegion = QString::fromLocal8Bit(record->region);
+            if (isRegionEmpty || recordRegion.compare(regionFilter, Qt::CaseInsensitive) == 0) {
+                if (!isRegionEmpty)
+                    isRegionFound = true;
+                ui->tableWidget->insertRow(row);
+                ui->tableWidget->setItem(row, COL_YEAR - 1, new QTableWidgetItem(QString::number(record->year)));
+                ui->tableWidget->setItem(row, COL_REGION - 1, new QTableWidgetItem(recordRegion));
+                ui->tableWidget->setItem(row, COL_NPG - 1, new QTableWidgetItem(QString::number(record->naturalPopulationGrowth)));
+                ui->tableWidget->setItem(row, COL_BIRTH_RATE - 1, new QTableWidgetItem(QString::number(record->birthRate)));
+                ui->tableWidget->setItem(row, COL_DEATH_RATE - 1, new QTableWidgetItem(QString::number(record->deathRate)));
+                ui->tableWidget->setItem(row, COL_GDW - 1, new QTableWidgetItem(QString::number(record->generalDemographicWeight)));
+                ui->tableWidget->setItem(row, COL_URBANIZATION - 1, new QTableWidgetItem(QString::number(record->urbanization)));
+                row++;
             }
-
-            ui->tableWidget->insertRow(row);
-            ui->tableWidget->setItem(row, TABLE_YEAR, new QTableWidgetItem(QString::number(record->year)));
-            ui->tableWidget->setItem(row, TABLE_REGION, new QTableWidgetItem(region));
-            ui->tableWidget->setItem(row, TABLE_NPG, new QTableWidgetItem(QString::number(record->naturalPopulationGrowth)));
-            ui->tableWidget->setItem(row, TABLE_BIRTH, new QTableWidgetItem(QString::number(record->birthRate)));
-            ui->tableWidget->setItem(row, TABLE_DEATH, new QTableWidgetItem(QString::number(record->deathRate)));
-            ui->tableWidget->setItem(row, TABLE_GDW, new QTableWidgetItem(QString::number(record->generalDemographicWeight)));
-            ui->tableWidget->setItem(row, TABLE_URBAN, new QTableWidgetItem(QString::number(record->urbanization)));
-            row++;
         }
 
         next(&it);
     }
+
+    if (!isRegionEmpty && !isRegionFound)
+        statusBar()->showMessage("Region is not found in loaded data", STATUS_BAR_MESSAGE_TIMEOUT_MS);
 }
 
 void MainWindow::chooseFileClicked() {
@@ -169,18 +152,18 @@ void MainWindow::chooseFileClicked() {
 
 void MainWindow::loadDataClicked() {
     AppParams params;
-    QByteArray filePathData = ui->filePathLineEdit->text().toLocal8Bit();
+    std::string filePath = ui->filePathLineEdit->text().toStdString();
 
-    params.str = filePathData.constData();
+    params.str = filePath.c_str();
     params.column = COL_YEAR;
 
     doOperation(LOAD_DATA, &context, &params);
-    showStatus(context.status);
+    statusBar()->showMessage(statusText(context.status), STATUS_BAR_MESSAGE_TIMEOUT_MS);
     showLoadSummary();
 
     if (context.status == STATUS_OK) {
         setLoadedState(true);
-        fillTable(ui->regionLineEdit->text());
+        fillTable(ui->regionLineEdit->text().trimmed());
     } else {
         setLoadedState(false);
         clearMetricFields();
@@ -189,17 +172,17 @@ void MainWindow::loadDataClicked() {
 
 void MainWindow::calculateMetricsClicked() {
     AppParams params;
-    QByteArray regionData = ui->regionLineEdit->text().trimmed().toUtf8();
+    std::string region = ui->regionLineEdit->text().trimmed().toStdString();
 
-    params.str = regionData.constData();
+    params.str = region.c_str();
     params.column = (Column)ui->columnSpinBox->value();
 
     doOperation(CALCULATE_METRICS, &context, &params);
-    showStatus(context.status);
+    statusBar()->showMessage(statusText(context.status), STATUS_BAR_MESSAGE_TIMEOUT_MS);
 
     if (context.status == STATUS_OK) {
         ui->minValueLineEdit->setText(QString::number(context.metrics.min));
-        ui->maxValueLineEdit_->setText(QString::number(context.metrics.median));
+        ui->medianValueLineEdit->setText(QString::number(context.metrics.median));
         ui->maxValueLineEdit->setText(QString::number(context.metrics.max));
     } else
         clearMetricFields();
@@ -207,5 +190,10 @@ void MainWindow::calculateMetricsClicked() {
 
 void MainWindow::regionEditingFinished() {
     if (dataLoaded)
-        fillTable(ui->regionLineEdit->text());
+        fillTable(ui->regionLineEdit->text().trimmed());
+}
+
+void MainWindow::tableItemDoubleClicked(QTableWidgetItem *item) {
+    if (item && item->column() == COL_REGION - 1)
+        QGuiApplication::clipboard()->setText(item->text());
 }

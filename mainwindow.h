@@ -8,6 +8,7 @@ extern "C" {
 
 #include <QMainWindow>
 #include <QString>
+#include <QTableWidgetItem>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -23,13 +24,13 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private slots:
+private:
     void chooseFileClicked();
     void loadDataClicked();
     void calculateMetricsClicked();
     void regionEditingFinished();
+    void tableItemDoubleClicked(QTableWidgetItem *item);
 
-private:
     Ui::MainWindow *ui;
     AppContext context;
     bool dataLoaded;
@@ -40,7 +41,6 @@ private:
     void fillTable(const QString& regionFilter);
     void clearMetricFields();
     void showLoadSummary();
-    void showStatus(Status status);
     QString statusText(Status status) const;
 };
 

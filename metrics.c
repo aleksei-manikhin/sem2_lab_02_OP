@@ -14,7 +14,6 @@ void fillMetricsFromSorted(Metrics* metrics, const List* sortedValues);
 
 int isNumericColumn(Column column) {
   int isValid = 0;
-
   if (column >= COL_YEAR && column <= COL_URBANIZATION && column != COL_REGION)
     isValid = 1;
 
