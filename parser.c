@@ -14,8 +14,8 @@ int validateCsvHeader(const char* headerLine) {
 
 int parseDemographyLine(const char* line, DemographyRecord* record) {
   return line != NULL &&
-         record != NULL &&
-          sscanf(line, "%d,%127[^,],%lf,%lf,%lf,%lf,%lf",
+        record != NULL &&
+        sscanf(line, "%d,%127[^,],%lf,%lf,%lf,%lf,%lf",
                            &record->year,
                            record->region,
                            &record->naturalPopulationGrowth,

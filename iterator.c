@@ -11,7 +11,7 @@ Iterator begin(const List* list) {
 }
 
 int isSet(const Iterator* it) {
-  return (it != NULL && it->current != NULL) ? 1 : 0; //
+  return (it != NULL && it->current != NULL);
 }
 
 void next(Iterator* it) {
