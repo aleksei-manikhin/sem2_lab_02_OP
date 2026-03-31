@@ -32,7 +32,7 @@
    <string>MainWindow</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">/* ===== Base ===== */
+   <string notr="true">
 QMainWindow, QWidget#centralwidget {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
                                 stop:0 #f3f6fb, stop:0.55 #eef3fb, stop:1 #f4f0f6);
@@ -46,7 +46,7 @@ QMenuBar, QStatusBar {
     border: none;
 }
 
-/* ===== Top row: file ===== */
+
 QPushButton#chooseFileButton {
     background: #ffffff;
     color: #2c3f59;
@@ -76,7 +76,6 @@ QLineEdit#filePathLineEdit:read-only {
     color: #3b4e66;
 }
 
-/* ===== Controls row ===== */
 QFrame#regionFrame, QFrame#columnFrame {
     background: rgba(255,255,255,0.7);
     border: 2px solid #6ac8cc;
@@ -113,7 +112,6 @@ QSpinBox#columnSpinBox:focus {
     background: #ffffff;
 }
 
-/* ===== Primary action buttons ===== */
 QPushButton#loadDataButton {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                                 stop:0 #17c2c2, stop:1 #0fa8ba);
@@ -146,7 +144,7 @@ QPushButton#calculateMetricsButton:disabled {
     color: #eef0f4;
 }
 
-/* ===== Stacked content ===== */
+
 QStackedWidget#contentStackedWidget {
     background: rgba(255,255,255,0.45);
     border: 1px solid #d8dfeb;
@@ -166,7 +164,6 @@ QLabel#emptyPageText {
     padding: 8px 24px;
 }
 
-/* ===== Table ===== */
 QTableWidget#tableWidget {
     background: #f7f9fd;
     border: 1px solid #cfd8e6;
@@ -212,7 +209,6 @@ QScrollBar::add-page, QScrollBar::sub-page {
     border: none;
 }
 
-/* ===== Metric cards ===== */
 QFrame#minFrame, QFrame#maxFrame, QFrame#medianFrame {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
                                 stop:0 #f2f6fb, stop:1 #f7f4fb);
@@ -239,7 +235,7 @@ QLineEdit#medianValueLineEdit:read-only {
     color: #1b2c42;
 }
 
-/* ===== Placeholder/icon labels (temporary, until real icons) ===== */
+ 
 QLabel#fileIconLabel, QLabel#regionIconlabel, QLabel#columnIconLabel,
 QLabel#emptyPageIcon, QLabel#minIconLabel, QLabel#maxIconLabel_2, QLabel#medianIconLabel {
     color: #6f89ab;
@@ -247,8 +243,6 @@ QLabel#emptyPageIcon, QLabel#minIconLabel, QLabel#maxIconLabel_2, QLabel#medianI
     border: none;
 }
 
-
-/* ===== More visible status bar (errors/warnings/info) ===== */
 QStatusBar {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                                 stop:0 #1f2f46, stop:1 #223a5d);
@@ -263,7 +257,6 @@ QStatusBar::item {
     border: none;
 }
 
-/* Optional: if you show temporary widgets/messages there */
 QStatusBar QLabel {
     color: #ffffff;
     padding-left: 8px;
