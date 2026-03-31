@@ -2,9 +2,12 @@
 #include "ui_mainwindow.h"
 
 #include <QClipboard>
+#include <QComboBox>
+#include <QEvent>
 #include <QFileDialog>
 #include <QGuiApplication>
 #include <QHeaderView>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QStatusBar>
 #include <QStandardPaths>
@@ -23,6 +26,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     doOperation(INITIALIZE, &context, nullptr);
     setupTable();
+    setupColumnComboBox();
+    setupRegionComboBox();
     setupConnections();
     setLoadedState();
     clearMetricFields();
@@ -35,11 +40,28 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
+    if (event != nullptr && event->type() == QEvent::MouseButtonPress) {
+        if (ui->regionComboBox != nullptr && watched == ui->regionComboBox->lineEdit())
+            ui->regionComboBox->showPopup();
+        else if (ui->columnComboBox != nullptr && watched == ui->columnComboBox->lineEdit())
+            ui->columnComboBox->showPopup();
+    }
+
+    return QMainWindow::eventFilter(watched, event);
+}
+
 void MainWindow::setupConnections() {
     connect(ui->chooseFileButton, &QPushButton::clicked, this, &MainWindow::chooseFileClicked);
     connect(ui->loadDataButton, &QPushButton::clicked, this, &MainWindow::loadDataClicked);
     connect(ui->calculateMetricsButton, &QPushButton::clicked, this, &MainWindow::calculateMetricsClicked);
-    connect(ui->regionLineEdit, &QLineEdit::editingFinished, this, &MainWindow::regionEditingFinished);
+    connect(ui->regionComboBox, QOverload<int>::of(&QComboBox::activated), this, [this](int) {
+        regionEditingFinished();
+    });
+    if (ui->regionComboBox->lineEdit() != nullptr) {
+        connect(ui->regionComboBox->lineEdit(), &QLineEdit::editingFinished,
+                this, &MainWindow::regionEditingFinished);
+    }
     connect(ui->tableWidget, &QTableWidget::itemDoubleClicked, this, &MainWindow::tableItemDoubleClicked);
 }
 
@@ -48,6 +70,78 @@ void MainWindow::setupTable() {
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->tableWidget->setHorizontalHeaderLabels(
         {"Year", "Region", "Growth", "Birth", "Death", "Weight", "Urban"});
+}
+
+void MainWindow::setupColumnComboBox() {
+    ui->columnComboBox->clear();
+    ui->columnComboBox->addItem("Year", COL_YEAR);
+    ui->columnComboBox->addItem("Growth", COL_NPG);
+    ui->columnComboBox->addItem("Birth", COL_BIRTH_RATE);
+    ui->columnComboBox->addItem("Death", COL_DEATH_RATE);
+    ui->columnComboBox->addItem("Weight", COL_GDW);
+    ui->columnComboBox->addItem("Urban", COL_URBANIZATION);
+    ui->columnComboBox->setCurrentIndex(0);
+    ui->columnComboBox->setCompleter(nullptr);
+    if (ui->columnComboBox->lineEdit() != nullptr)
+        ui->columnComboBox->lineEdit()->installEventFilter(this);
+}
+
+void MainWindow::setupRegionComboBox() {
+    ui->regionComboBox->clear();
+    ui->regionComboBox->addItem("");
+    ui->regionComboBox->setCurrentIndex(0);
+    ui->regionComboBox->setCompleter(nullptr);
+    if (ui->regionComboBox->lineEdit() != nullptr)
+        ui->regionComboBox->lineEdit()->installEventFilter(this);
+}
+
+void MainWindow::reloadRegionComboBox() {
+    QString currentText = ui->regionComboBox->currentText().trimmed();
+    Iterator it;
+
+    if (context.list != nullptr) {
+        ui->regionComboBox->clear();
+        ui->regionComboBox->addItem("");
+
+        it = begin(context.list);
+        while (isSet(&it)) {
+            DemographyRecord* record = (DemographyRecord*)get(&it);
+            if (record != nullptr) {
+                QString region = QString::fromLocal8Bit(record->region).trimmed();
+                int foundIndex = -1;
+
+                for (int i = 0; i < ui->regionComboBox->count(); i++) {
+                    if (ui->regionComboBox->itemText(i).compare(region, Qt::CaseInsensitive) == 0) {
+                        foundIndex = i;
+                        break;
+                    }
+                }
+
+                if (!region.isEmpty() && foundIndex < 0)
+                    ui->regionComboBox->addItem(region);
+            }
+            next(&it);
+        }
+    } else {
+        ui->regionComboBox->clear();
+        ui->regionComboBox->addItem("");
+    }
+
+    if (currentText.isEmpty())
+        ui->regionComboBox->setCurrentIndex(0);
+    else
+        ui->regionComboBox->setEditText(currentText);
+}
+
+Column MainWindow::selectedColumn() const {
+    QString text = ui->columnComboBox->currentText().trimmed();
+
+    for (int i = 0; i < ui->columnComboBox->count(); i++) {
+        if (ui->columnComboBox->itemText(i).compare(text, Qt::CaseInsensitive) == 0)
+            return (Column)ui->columnComboBox->itemData(i).toInt();
+    }
+
+    return (Column)0;
 }
 
 int MainWindow::hasLoadedData() const {
@@ -169,10 +263,11 @@ void MainWindow::loadDataClicked() {
     doOperation(LOAD_DATA, &context, &params);
     statusBar()->showMessage(statusText(context.status), STATUS_BAR_MESSAGE_TIMEOUT_MS);
     showLoadSummary();
+    reloadRegionComboBox();
     setLoadedState();
 
     if (context.status == OK) {
-        fillTable(ui->regionLineEdit->text().trimmed());
+        fillTable(ui->regionComboBox->currentText().trimmed());
     } else {
         clearMetricFields();
     }
@@ -180,10 +275,10 @@ void MainWindow::loadDataClicked() {
 
 void MainWindow::calculateMetricsClicked() {
     AppParams params;
-    std::string region = ui->regionLineEdit->text().trimmed().toStdString();
+    std::string region = ui->regionComboBox->currentText().trimmed().toStdString();
 
     params.str = region.c_str();
-    params.column = (Column)ui->columnSpinBox->value();
+    params.column = selectedColumn();
 
     doOperation(CALCULATE_METRICS, &context, &params);
     statusBar()->showMessage(statusText(context.status), STATUS_BAR_MESSAGE_TIMEOUT_MS);
@@ -198,7 +293,7 @@ void MainWindow::calculateMetricsClicked() {
 
 void MainWindow::regionEditingFinished() {
     if (hasLoadedData())
-        fillTable(ui->regionLineEdit->text().trimmed());
+        fillTable(ui->regionComboBox->currentText().trimmed());
 }
 
 void MainWindow::tableItemDoubleClicked(QTableWidgetItem *item) {

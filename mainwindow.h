@@ -16,6 +16,8 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+class QEvent;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -23,6 +25,9 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
     void chooseFileClicked();
@@ -36,8 +41,12 @@ private:
 
     void setupConnections();
     void setupTable();
+    void setupColumnComboBox();
+    void setupRegionComboBox();
+    void reloadRegionComboBox();
     void setLoadedState();
     int hasLoadedData() const;
+    Column selectedColumn() const;
     void fillTable(const QString& regionFilter);
     void clearMetricFields();
     void showLoadSummary();
