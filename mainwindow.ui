@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>870</width>
-    <height>528</height>
+    <width>815</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,12 +18,258 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>870</width>
+    <width>815</width>
     <height>500</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <family>Segoe UI</family>
+    <pointsize>-1</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* ===== Base ===== */
+QMainWindow, QWidget#centralwidget {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                stop:0 #f3f6fb, stop:0.55 #eef3fb, stop:1 #f4f0f6);
+    color: #253246;
+    font-family: &quot;Segoe UI&quot;;
+    font-size: 16px;
+}
+
+QMenuBar, QStatusBar {
+    background: transparent;
+    border: none;
+}
+
+/* ===== Top row: file ===== */
+QPushButton#chooseFileButton {
+    background: #ffffff;
+    color: #2c3f59;
+    border: 2px solid #93a8c6;
+    border-radius: 14px;
+    padding: 8px 16px;
+    font-weight: 600;
+}
+QPushButton#chooseFileButton:hover { background: #f5f9ff; }
+QPushButton#chooseFileButton:pressed { background: #eaf2ff; }
+
+QWidget#fileWidget {
+    background: rgba(255,255,255,0.7);
+    border: 2px solid #cfd8e6;
+    border-radius: 14px;
+}
+
+QLineEdit#filePathLineEdit {
+    background: transparent;
+    border: none;
+    color: #33465f;
+    padding: 0 10px;
+    selection-background-color: #2f62c7;
+    selection-color: #ffffff;
+}
+QLineEdit#filePathLineEdit:read-only {
+    color: #3b4e66;
+}
+
+/* ===== Controls row ===== */
+QFrame#regionFrame, QFrame#columnFrame {
+    background: rgba(255,255,255,0.7);
+    border: 2px solid #6ac8cc;
+    border-radius: 14px;
+}
+
+QLabel#regionText, QLabel#columnLabel {
+    color: #3a4b61;
+    font-weight: 600;
+}
+
+QLineEdit#regionLineEdit {
+    background: rgba(255,255,255,0.65);
+    border: 1px solid #b8c8db;
+    border-radius: 10px;
+    padding: 0 12px;
+    color: #2a3d54;
+}
+QLineEdit#regionLineEdit:focus {
+    border: 2px solid #5cc7cb;
+    background: #ffffff;
+}
+
+QSpinBox#columnSpinBox {
+    background: rgba(255,255,255,0.65);
+    border: 1px solid #b8c8db;
+    border-radius: 10px;
+    color: #2a3d54;
+    padding: 0 8px;
+    font-weight: 600;
+}
+QSpinBox#columnSpinBox:focus {
+    border: 2px solid #5cc7cb;
+    background: #ffffff;
+}
+
+/* ===== Primary action buttons ===== */
+QPushButton#loadDataButton {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #17c2c2, stop:1 #0fa8ba);
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    font-weight: 700;
+    padding: 8px 16px;
+}
+QPushButton#loadDataButton:hover { background: #10b5bf; }
+QPushButton#loadDataButton:pressed { background: #0d99a8; }
+QPushButton#loadDataButton:disabled {
+    background: #cfd4dd;
+    color: #f6f7f9;
+}
+
+QPushButton#calculateMetricsButton {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #2f67d2, stop:1 #1d4fc0);
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    font-weight: 700;
+    padding: 8px 16px;
+}
+QPushButton#calculateMetricsButton:hover { background: #275cc8; }
+QPushButton#calculateMetricsButton:pressed { background: #214fb0; }
+QPushButton#calculateMetricsButton:disabled {
+    background: #c9ced9;
+    color: #eef0f4;
+}
+
+/* ===== Stacked content ===== */
+QStackedWidget#contentStackedWidget {
+    background: rgba(255,255,255,0.45);
+    border: 1px solid #d8dfeb;
+    border-radius: 14px;
+}
+
+QWidget#emptyPage {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                stop:0 #f4f8ff, stop:1 #f6f4fa);
+    border: 1px solid #dbe3ef;
+    border-radius: 16px;
+}
+QLabel#emptyPageText {
+    color: #2f3d50;
+    font-size: 32px;
+    font-weight: 700;
+    padding: 8px 24px;
+}
+
+/* ===== Table ===== */
+QTableWidget#tableWidget {
+    background: #f7f9fd;
+    border: 1px solid #cfd8e6;
+    border-radius: 10px;
+    gridline-color: #d6dde8;
+    alternate-background-color: #eef2f8;
+    color: #273a54;
+    selection-background-color: #dce9ff;
+    selection-color: #273a54;
+}
+
+QHeaderView::section {
+    background: #244ca6;
+    color: #ffffff;
+    border: none;
+    border-right: 1px solid #6283cb;
+    padding: 8px 6px;
+    font-weight: 700;
+}
+
+QTableCornerButton::section {
+    background: #244ca6;
+    border: none;
+}
+
+QScrollBar:vertical, QScrollBar:horizontal {
+    background: transparent;
+    border: none;
+    margin: 2px;
+}
+QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+    background: #b8c6dd;
+    border-radius: 6px;
+    min-height: 24px;
+    min-width: 24px;
+}
+QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover {
+    background: #9fb1cf;
+}
+QScrollBar::add-line, QScrollBar::sub-line,
+QScrollBar::add-page, QScrollBar::sub-page {
+    background: none;
+    border: none;
+}
+
+/* ===== Metric cards ===== */
+QFrame#minFrame, QFrame#maxFrame, QFrame#medianFrame {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                stop:0 #f2f6fb, stop:1 #f7f4fb);
+    border: 1px solid #d8e1ee;
+    border-radius: 16px;
+}
+
+QLabel#minLabelText, QLabel#maxLabelText, QLabel#medianLabelText {
+    color: #2b3f5d;
+    font-weight: 700;
+}
+
+QLineEdit#minValueLineEdit, QLineEdit#maxValueLineEdit, QLineEdit#medianValueLineEdit {
+    background: transparent;
+    border: none;
+    color: #172739;
+    font-size: 40px;
+    font-weight: 800;
+    padding-bottom: 4px;
+}
+QLineEdit#minValueLineEdit:read-only,
+QLineEdit#maxValueLineEdit:read-only,
+QLineEdit#medianValueLineEdit:read-only {
+    color: #1b2c42;
+}
+
+/* ===== Placeholder/icon labels (temporary, until real icons) ===== */
+QLabel#fileIconLabel, QLabel#regionIconlabel, QLabel#columnIconLabel,
+QLabel#emptyPageIcon, QLabel#minIconLabel, QLabel#maxIconLabel_2, QLabel#medianIconLabel {
+    color: #6f89ab;
+    background: transparent;
+    border: none;
+}
+
+
+/* ===== More visible status bar (errors/warnings/info) ===== */
+QStatusBar {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #1f2f46, stop:1 #223a5d);
+    color: #ffffff;
+    border-top: 2px solid #4d6ea6;
+    font-size: 15px;
+    font-weight: 700;
+    min-height: 30px;
+}
+
+QStatusBar::item {
+    border: none;
+}
+
+/* Optional: if you show temporary widgets/messages there */
+QStatusBar QLabel {
+    color: #ffffff;
+    padding-left: 8px;
+}
+
+</string>
   </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonStyle::ToolButtonFollowStyle</enum>
@@ -57,6 +303,12 @@
           <width>180</width>
           <height>50</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>11</pointsize>
+          <fontweight>DemiBold</fontweight>
+         </font>
         </property>
         <property name="text">
          <string>Select file</string>
@@ -97,6 +349,11 @@
              <width>0</width>
              <height>50</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
            </property>
            <property name="alignment">
             <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -157,6 +414,12 @@
          </item>
          <item>
           <widget class="QLabel" name="regionText">
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+             <fontweight>DemiBold</fontweight>
+            </font>
+           </property>
            <property name="text">
             <string>Region:</string>
            </property>
@@ -175,6 +438,11 @@
              <width>0</width>
              <height>40</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
            </property>
            <property name="placeholderText">
             <string>e.g: Republic of Adygea</string>
@@ -214,6 +482,12 @@
          </item>
          <item>
           <widget class="QLabel" name="columnLabel">
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+             <fontweight>DemiBold</fontweight>
+            </font>
+           </property>
            <property name="text">
             <string>Column:</string>
            </property>
@@ -263,6 +537,12 @@
           <width>220</width>
           <height>56</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>11</pointsize>
+          <bold>true</bold>
+         </font>
         </property>
         <property name="text">
          <string>Load data</string>
@@ -326,7 +606,8 @@
          <widget class="QLabel" name="emptyPageText">
           <property name="font">
            <font>
-            <pointsize>14</pointsize>
+            <pointsize>-1</pointsize>
+            <bold>true</bold>
            </font>
           </property>
           <property name="text">
@@ -475,6 +756,7 @@
              <property name="font">
               <font>
                <pointsize>12</pointsize>
+               <bold>true</bold>
               </font>
              </property>
              <property name="text">
@@ -497,7 +779,8 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>19</pointsize>
+             <pointsize>-1</pointsize>
+             <fontweight>ExtraBold</fontweight>
             </font>
            </property>
            <property name="alignment">
@@ -561,6 +844,7 @@
              <property name="font">
               <font>
                <pointsize>12</pointsize>
+               <bold>true</bold>
               </font>
              </property>
              <property name="text">
@@ -583,7 +867,8 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>19</pointsize>
+             <pointsize>-1</pointsize>
+             <fontweight>ExtraBold</fontweight>
             </font>
            </property>
            <property name="alignment">
@@ -647,6 +932,7 @@
              <property name="font">
               <font>
                <pointsize>12</pointsize>
+               <bold>true</bold>
               </font>
              </property>
              <property name="text">
@@ -669,7 +955,8 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>19</pointsize>
+             <pointsize>-1</pointsize>
+             <fontweight>ExtraBold</fontweight>
             </font>
            </property>
            <property name="alignment">
@@ -718,7 +1005,8 @@
         </property>
         <property name="font">
          <font>
-          <pointsize>13</pointsize>
+          <pointsize>12</pointsize>
+          <bold>true</bold>
          </font>
         </property>
         <property name="text">
@@ -748,7 +1036,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>870</width>
+     <width>815</width>
      <height>24</height>
     </rect>
    </property>
