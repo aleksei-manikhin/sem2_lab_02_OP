@@ -5,14 +5,13 @@
 Status processLines(FILE* file, List* list, ParseInfo* info);
 
 Status loadDemographyData(const char* filePath, List* list, ParseInfo* info) {
-  Status error = STATUS_OK;
+  Status error = OK;
   FILE* file = NULL;
   char buffer[LINE_SIZE];
 
   if (filePath == NULL || list == NULL || info == NULL) {
     error = ERR_FILE_OPEN;
   } else {
-    info->totalRows = 0;
     info->validRows = 0;
     info->invalidRows = 0;
 
@@ -36,13 +35,11 @@ Status loadDemographyData(const char* filePath, List* list, ParseInfo* info) {
 }
 
 Status processLines(FILE* file, List* list, ParseInfo* info) {
-  Status error = STATUS_OK;
+  Status error = OK;
   char buffer[LINE_SIZE];
   DemographyRecord record;
 
   while (fgets(buffer, sizeof(buffer), file) != NULL) {
-    info->totalRows++;
-
     if (parseDemographyLine(buffer, &record)) {
       if (pushBack(list, &record)) {
         info->validRows++;

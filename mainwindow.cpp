@@ -7,6 +7,7 @@
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QStatusBar>
+#include <QStandardPaths>
 #include <QTableWidgetItem>
 
 #include <string>
@@ -67,7 +68,7 @@ QString MainWindow::statusText(Status status) const {
     QString text;
 
     switch (status) {
-    case STATUS_OK:
+    case OK:
         text = "OK";
         break;
     case ERR_FILE_OPEN:
@@ -97,8 +98,9 @@ QString MainWindow::statusText(Status status) const {
 }
 
 void MainWindow::showLoadSummary() {
+    size_t totalRows = context.parseInfo.validRows + context.parseInfo.invalidRows;
     QString summary = QString("Total rows: %1\nValid rows: %2\nInvalid rows: %3")
-                          .arg(context.parseInfo.totalRows)
+                          .arg(totalRows)
                           .arg(context.parseInfo.validRows)
                           .arg(context.parseInfo.invalidRows);
     QMessageBox::information(this, "Load Result", summary);
@@ -144,7 +146,10 @@ void MainWindow::fillTable(const QString& regionFilter) {
 
 void MainWindow::chooseFileClicked() {
     QString fileName = QFileDialog::getOpenFileName(
-        this, "Select CSV file", "", "CSV Files (*.csv);;All Files (*)");
+        this,
+        "Select CSV file",
+        QStandardPaths::writableLocation(QStandardPaths::DesktopLocation),
+        "CSV Files (*.csv);;All Files (*)");
 
     if (!fileName.isEmpty())
         ui->filePathLineEdit->setText(fileName);
@@ -161,7 +166,7 @@ void MainWindow::loadDataClicked() {
     statusBar()->showMessage(statusText(context.status), STATUS_BAR_MESSAGE_TIMEOUT_MS);
     showLoadSummary();
 
-    if (context.status == STATUS_OK) {
+    if (context.status == OK) {
         setLoadedState(true);
         fillTable(ui->regionLineEdit->text().trimmed());
     } else {
@@ -180,7 +185,7 @@ void MainWindow::calculateMetricsClicked() {
     doOperation(CALCULATE_METRICS, &context, &params);
     statusBar()->showMessage(statusText(context.status), STATUS_BAR_MESSAGE_TIMEOUT_MS);
 
-    if (context.status == STATUS_OK) {
+    if (context.status == OK) {
         ui->minValueLineEdit->setText(QString::number(context.metrics.min));
         ui->medianValueLineEdit->setText(QString::number(context.metrics.median));
         ui->maxValueLineEdit->setText(QString::number(context.metrics.max));

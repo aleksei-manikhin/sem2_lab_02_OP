@@ -4,7 +4,7 @@
 #include "list.h"
 
 typedef enum {
-    STATUS_OK,
+    OK,
     ERR_FILE_OPEN,
     ERR_INVALID_HEADER,
     MEMORY_ERR,
@@ -14,7 +14,6 @@ typedef enum {
 } Status;
 
 typedef struct {
-    size_t totalRows;
     size_t validRows;
     size_t invalidRows;
 } ParseInfo;

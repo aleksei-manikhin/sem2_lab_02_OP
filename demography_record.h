@@ -6,12 +6,12 @@
 
 typedef enum {
     COL_YEAR = 1,
-    COL_REGION = 2,
-    COL_NPG = 3,
-    COL_BIRTH_RATE = 4,
-    COL_DEATH_RATE = 5,
-    COL_GDW = 6,
-    COL_URBANIZATION = 7
+    COL_REGION,
+    COL_NPG,
+    COL_BIRTH_RATE,
+    COL_DEATH_RATE,
+    COL_GDW,
+    COL_URBANIZATION,
 } Column;
 
 

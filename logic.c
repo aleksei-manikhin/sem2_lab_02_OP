@@ -10,7 +10,6 @@ Status loadAndCheckData(AppContext* context, const char* filePath);
 
 void clearParseInfo(ParseInfo* parseInfo) {
   if (parseInfo != NULL) {
-    parseInfo->totalRows = 0;
     parseInfo->validRows = 0;
     parseInfo->invalidRows = 0;
   }
@@ -25,7 +24,7 @@ void clearMetrics(Metrics* metrics) {
 }
 
 Status prepareListForLoad(AppContext* context) {
-  Status status = STATUS_OK;
+  Status status = OK;
   if (context->list == NULL){
     if (!(context->list = initList(sizeof(DemographyRecord))))
       status = MEMORY_ERR;
@@ -37,7 +36,7 @@ Status prepareListForLoad(AppContext* context) {
 
 Status loadAndCheckData(AppContext* context, const char* filePath) {
   Status status = loadDemographyData(filePath, context->list, &context->parseInfo);
-  return (status == STATUS_OK && context->list->size == 0) ? ERR_EMPTY_DATA : status;
+  return (status == OK && context->list->size == 0) ? ERR_EMPTY_DATA : status;
 }
 
 
@@ -46,7 +45,7 @@ void initContext(AppContext* context) {
     context->list = NULL;
     clearParseInfo(&context->parseInfo);
     clearMetrics(&context->metrics);
-    context->status = STATUS_OK;
+    context->status = OK;
   }
 }
 
@@ -58,12 +57,12 @@ void disposeContext(AppContext* context) {
     }
     clearParseInfo(&context->parseInfo);
     clearMetrics(&context->metrics);
-    context->status = STATUS_OK;
+    context->status = OK;
   }
 }
 
 Status loadData(AppContext* context, const char* filePath) {
-  Status status = STATUS_OK;
+  Status status = OK;
 
   if (context == NULL)
     status = ERR_EMPTY_DATA;
@@ -73,7 +72,7 @@ Status loadData(AppContext* context, const char* filePath) {
     status = prepareListForLoad(context);
     clearParseInfo(&context->parseInfo);
     clearMetrics(&context->metrics);
-    if (status == STATUS_OK)
+    if (status == OK)
       status = loadAndCheckData(context, filePath);
 
     context->status = status;
@@ -82,7 +81,7 @@ Status loadData(AppContext* context, const char* filePath) {
 }
 
 Status calculateMetricsForRegion(AppContext* context, const char* region, Column column) {
-  Status status = STATUS_OK;
+  Status status = OK;
 
   if (context == NULL)
     status = ERR_EMPTY_DATA;

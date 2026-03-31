@@ -4,19 +4,12 @@
 #include <string.h>
 
 int validateCsvHeader(const char* headerLine) {
-  int isCorrect = 0;
-
-  if (headerLine != NULL) {
-    if (strstr(headerLine, "year") != NULL &&
-        strstr(headerLine, "region") != NULL &&
-        strstr(headerLine, "birth_rate") != NULL &&
-        strstr(headerLine, "death_rate") != NULL &&
-        strstr(headerLine, "urbanization") != NULL) {
-        isCorrect = 1;
-    }
-  }
-
-    return isCorrect;
+  return headerLine != NULL &&
+         strstr(headerLine, "year") != NULL &&
+         strstr(headerLine, "region") != NULL &&
+         strstr(headerLine, "birth_rate") != NULL &&
+         strstr(headerLine, "death_rate") != NULL &&
+         strstr(headerLine, "urbanization") != NULL;
 }
 
 int parseDemographyLine(const char* line, DemographyRecord* record) {

@@ -34,7 +34,7 @@ int compareDoubleValues(const void* left, const void* right) {
 }
 
 Status validateMetricsInput(const AppContext* context, const char* region, Column column) {
-  Status status = STATUS_OK;
+  Status status = OK;
 
   if (context == NULL || context->list == NULL || region == NULL)
     status = ERR_EMPTY_DATA;
@@ -75,7 +75,7 @@ int insertRegionValues(const AppContext* context, const char* region, Column col
 
   while (isSet(&it) && isSuccess) {
     DemographyRecord* record = (DemographyRecord*)get(&it);
-    if (record != NULL && strcmp(record->region, region) == 0) {
+    if (record != NULL && !strcmp(record->region, region)) {
       double value = getColumnValue(record, column);
       if (!insertSorted(sortedValues, &value, compareDoubleValues))
         isSuccess = 0;
@@ -113,7 +113,7 @@ Status calculateMetrics(AppContext* context, const char* region, Column column) 
   Status status = validateMetricsInput(context, region, column);
   List* sortedValues = NULL;
 
-  if (status == STATUS_OK) {
+  if (status == OK) {
     sortedValues = initList(sizeof(double));
     if (sortedValues == NULL)
       status = MEMORY_ERR;
