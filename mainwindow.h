@@ -18,6 +18,7 @@ QT_END_NAMESPACE
 
 class QEvent;
 class QMimeData;
+class QDropEvent;
 
 class MainWindow : public QMainWindow
 {
@@ -46,6 +47,9 @@ private:
     void setupColumnComboBox();
     void setupRegionComboBox();
     void reloadRegionComboBox();
+    int isDropWidget(const QObject* watched) const;
+    int handleDragDropEvent(QEvent* event);
+    int acceptDropEvent(QDropEvent* dropEvent, int shouldSelectFile);
     void selectFile(const QString& filePath);
     void unloadData();
     QString droppedFilePath(const QMimeData* mimeData) const;
@@ -53,6 +57,7 @@ private:
     int hasLoadedData() const;
     Column selectedColumn() const;
     void fillTable(const QString& regionFilter);
+    void fillTableRow(int row, const DemographyRecord* record, const QString& recordRegion);
     void clearMetricFields();
     void showLoadSummary();
     QString statusText(Status status) const;

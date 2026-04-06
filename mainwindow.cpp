@@ -3,8 +3,6 @@
 
 #include <QClipboard>
 #include <QComboBox>
-#include <QDragEnterEvent>
-#include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QEvent>
 #include <QFileDialog>
@@ -49,52 +47,76 @@ MainWindow::~MainWindow()
 
 bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
     int isHandled = 0;
-    bool result = false;
-    int isDropTarget = watched == ui->contentStackedWidget
-                       || watched == ui->emptyPage
-                       || watched == ui->tablePage
-                       || watched == ui->tableWidget
-                       || watched == ui->tableWidget->viewport()
-                       || watched == ui->emptyPageText
-                       || watched == ui->icon_4;
 
     if (event != nullptr) {
         if (event->type() == QEvent::MouseButtonPress) {
             if (ui->regionComboBox != nullptr && watched == ui->regionComboBox->lineEdit())
                 ui->regionComboBox->showPopup();
-        } else if (isDropTarget && event->type() == QEvent::DragEnter) {
-            QDragEnterEvent* dragEvent = static_cast<QDragEnterEvent*>(event);
-            QString filePath = droppedFilePath(dragEvent->mimeData());
+        } else if (isDropWidget(watched))
+            isHandled = handleDragDropEvent(event);
+    }
 
-            if (!filePath.isEmpty()) {
-                dragEvent->acceptProposedAction();
-                isHandled = 1;
-            }
-        } else if (isDropTarget && event->type() == QEvent::DragMove) {
-            QDragMoveEvent* dragEvent = static_cast<QDragMoveEvent*>(event);
-            QString filePath = droppedFilePath(dragEvent->mimeData());
+    return isHandled;
+}
 
-            if (!filePath.isEmpty()) {
-                dragEvent->acceptProposedAction();
-                isHandled = 1;
-            }
-        } else if (isDropTarget && event->type() == QEvent::Drop) {
-            QDropEvent* dropEvent = static_cast<QDropEvent*>(event);
-            QString filePath = droppedFilePath(dropEvent->mimeData());
+int MainWindow::isDropWidget(const QObject* watched) const {
+    int result = watched == ui->contentStackedWidget
+                 || watched == ui->emptyPage
+                 || watched == ui->tablePage
+                 || watched == ui->tableWidget
+                 || watched == ui->tableWidget->viewport()
+                 || watched == ui->emptyPageText
+                 || watched == ui->icon_4;
+    return result;
+}
 
-            if (!filePath.isEmpty()) {
+int MainWindow::handleDragDropEvent(QEvent* event) {
+    int isHandled = 0;
+
+    if (event != nullptr) {
+        if (event->type() == QEvent::DragEnter || event->type() == QEvent::DragMove)
+            isHandled = acceptDropEvent(static_cast<QDropEvent*>(event), 0);
+        else if (event->type() == QEvent::Drop)
+            isHandled = acceptDropEvent(static_cast<QDropEvent*>(event), 1);
+    }
+
+    return isHandled;
+}
+
+int MainWindow::acceptDropEvent(QDropEvent* dropEvent, int shouldSelectFile) {
+    int isHandled = 0;
+
+    if (dropEvent != nullptr) {
+        QString filePath = droppedFilePath(dropEvent->mimeData());
+        if (!filePath.isEmpty()) {
+            if (shouldSelectFile)
                 selectFile(filePath);
-                dropEvent->acceptProposedAction();
-                isHandled = 1;
+            dropEvent->acceptProposedAction();
+            isHandled = 1;
+        }
+    }
+
+    return isHandled;
+}
+
+QString MainWindow::droppedFilePath(const QMimeData* mimeData) const {
+    QString filePath;
+
+    if (mimeData != nullptr && mimeData->hasUrls()) {
+        const QList<QUrl> urls = mimeData->urls();
+        for (const QUrl& url : urls) {
+            if (url.isLocalFile()) {
+                QString droppedPath = url.toLocalFile();
+                QFileInfo fileInfo(droppedPath);
+                if (fileInfo.exists() && fileInfo.isFile()) {
+                    filePath = droppedPath;
+                    break;
+                }
             }
         }
     }
 
-    if (!isHandled)
-        result = QMainWindow::eventFilter(watched, event);
-    else
-        result = true;
-    return result;
+    return filePath;
 }
 
 void MainWindow::setupConnections() {
@@ -107,13 +129,7 @@ void MainWindow::setupConnections() {
 }
 
 void MainWindow::setupDragAndDrop() {
-    ui->contentStackedWidget->setAcceptDrops(true);
-    ui->emptyPage->setAcceptDrops(true);
-    ui->tablePage->setAcceptDrops(true);
-    ui->tableWidget->setAcceptDrops(true);
     ui->tableWidget->viewport()->setAcceptDrops(true);
-    ui->emptyPageText->setAcceptDrops(true);
-    ui->icon_4->setAcceptDrops(true);
 
     ui->contentStackedWidget->installEventFilter(this);
     ui->emptyPage->installEventFilter(this);
@@ -194,25 +210,6 @@ void MainWindow::unloadData() {
     clearMetricFields();
 }
 
-QString MainWindow::droppedFilePath(const QMimeData* mimeData) const {
-    QString filePath;
-
-    if (mimeData != nullptr && mimeData->hasUrls()) {
-        const QList<QUrl> urls = mimeData->urls();
-        for (const QUrl& url : urls) {
-            if (url.isLocalFile()) {
-                QString droppedPath = url.toLocalFile();
-                QFileInfo fileInfo(droppedPath);
-                if (fileInfo.exists() && fileInfo.isFile()) {
-                    filePath = droppedPath;
-                    break;
-                }
-            }
-        }
-    }
-
-    return filePath;
-}
 
 Column MainWindow::selectedColumn() const {
     int selectedIndex = ui->columnComboBox->currentIndex();
@@ -299,13 +296,7 @@ void MainWindow::fillTable(const QString& regionFilter) {
                 if (!isRegionEmpty)
                     isRegionFound = 1;
                 ui->tableWidget->insertRow(row);
-                ui->tableWidget->setItem(row, COL_YEAR, new QTableWidgetItem(QString::number(record->year)));
-                ui->tableWidget->setItem(row, COL_REGION, new QTableWidgetItem(recordRegion));
-                ui->tableWidget->setItem(row, COL_NPG, new QTableWidgetItem(QString::number(record->naturalPopulationGrowth)));
-                ui->tableWidget->setItem(row, COL_BIRTH_RATE, new QTableWidgetItem(QString::number(record->birthRate)));
-                ui->tableWidget->setItem(row, COL_DEATH_RATE, new QTableWidgetItem(QString::number(record->deathRate)));
-                ui->tableWidget->setItem(row, COL_GDW, new QTableWidgetItem(QString::number(record->generalDemographicWeight)));
-                ui->tableWidget->setItem(row, COL_URBANIZATION, new QTableWidgetItem(QString::number(record->urbanization)));
+                fillTableRow(row, record, recordRegion);
                 row++;
             }
         }
@@ -315,6 +306,16 @@ void MainWindow::fillTable(const QString& regionFilter) {
 
     if (!isRegionEmpty && !isRegionFound)
         statusBar()->showMessage("Region is not found in loaded data", STATUS_BAR_MESSAGE_TIMEOUT_MS);
+}
+
+void MainWindow::fillTableRow(int row, const DemographyRecord* record, const QString& recordRegion) {
+    ui->tableWidget->setItem(row, COL_YEAR, new QTableWidgetItem(QString::number(record->year)));
+    ui->tableWidget->setItem(row, COL_REGION, new QTableWidgetItem(recordRegion));
+    ui->tableWidget->setItem(row, COL_NPG, new QTableWidgetItem(QString::number(record->naturalPopulationGrowth)));
+    ui->tableWidget->setItem(row, COL_BIRTH_RATE, new QTableWidgetItem(QString::number(record->birthRate)));
+    ui->tableWidget->setItem(row, COL_DEATH_RATE, new QTableWidgetItem(QString::number(record->deathRate)));
+    ui->tableWidget->setItem(row, COL_GDW, new QTableWidgetItem(QString::number(record->generalDemographicWeight)));
+    ui->tableWidget->setItem(row, COL_URBANIZATION, new QTableWidgetItem(QString::number(record->urbanization)));
 }
 
 void MainWindow::chooseFileClicked() {
