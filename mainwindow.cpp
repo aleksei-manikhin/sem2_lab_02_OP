@@ -95,7 +95,6 @@ int MainWindow::acceptDropEvent(QDropEvent* dropEvent, int shouldSelectFile) {
             isHandled = 1;
         }
     }
-
     return isHandled;
 }
 
@@ -115,7 +114,6 @@ QString MainWindow::droppedFilePath(const QMimeData* mimeData) const {
             }
         }
     }
-
     return filePath;
 }
 
@@ -273,7 +271,18 @@ void MainWindow::showLoadSummary() {
                           .arg(totalRows)
                           .arg(context.parseInfo.accepted)
                           .arg(context.parseInfo.rejected);
-    QMessageBox::information(this, "Load Result", summary);
+    QMessageBox messageBox(this);
+    messageBox.setIcon(QMessageBox::Information);
+    messageBox.setWindowTitle("Load Result");
+    messageBox.setText(summary);
+    messageBox.setStandardButtons(QMessageBox::Ok);
+    messageBox.setStyleSheet(
+        "QMessageBox { background: #f4f8ff; color: #253246; }"
+        "QLabel { color: #2f3d50; }"
+        "QPushButton { background: #ffffff; color: #2c3f59; border: 1px solid #93a8c6; border-radius: 10px; padding: 6px 14px; min-width: 84px; }"
+        "QPushButton:hover { background: #f5f9ff; }"
+        "QPushButton:pressed { background: #eaf2ff; }");
+    messageBox.exec();
 }
 
 
@@ -300,10 +309,8 @@ void MainWindow::fillTable(const QString& regionFilter) {
                 row++;
             }
         }
-
         next(&it);
     }
-
     if (!isRegionEmpty && !isRegionFound)
         statusBar()->showMessage("Region is not found in loaded data", STATUS_BAR_MESSAGE_TIMEOUT_MS);
 }
