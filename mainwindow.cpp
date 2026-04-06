@@ -80,19 +80,13 @@ void MainWindow::setupColumnComboBox() {
     ui->columnComboBox->addItem("Death", COL_DEATH_RATE);
     ui->columnComboBox->addItem("Weight", COL_GDW);
     ui->columnComboBox->addItem("Urban", COL_URBANIZATION);
-    ui->columnComboBox->setCurrentIndex(0);
-    ui->columnComboBox->setCompleter(nullptr);
-    if (ui->columnComboBox->lineEdit() != nullptr)
-        ui->columnComboBox->lineEdit()->installEventFilter(this);
 }
 
 void MainWindow::setupRegionComboBox() {
     ui->regionComboBox->clear();
     ui->regionComboBox->addItem("");
     ui->regionComboBox->setCurrentIndex(0);
-    ui->regionComboBox->setCompleter(nullptr);
-    if (ui->regionComboBox->lineEdit() != nullptr)
-        ui->regionComboBox->lineEdit()->installEventFilter(this);
+    ui->regionComboBox->lineEdit()->installEventFilter(this);
 }
 
 void MainWindow::reloadRegionComboBox() {
@@ -266,11 +260,11 @@ void MainWindow::loadDataClicked() {
     reloadRegionComboBox();
     setLoadedState();
 
-    if (context.status == OK) {
+    if (context.status == OK)
         fillTable(ui->regionComboBox->currentText().trimmed());
-    } else {
+    else
         clearMetricFields();
-    }
+
 }
 
 void MainWindow::calculateMetricsClicked() {

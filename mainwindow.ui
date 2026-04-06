@@ -428,21 +428,21 @@ QStatusBar QLabel {
          </item>
          <item>
           <widget class="QComboBox" name="regionComboBox">
-            <property name="editable">
-             <bool>true</bool>
-            </property>
-            <property name="insertPolicy">
-             <enum>QComboBox::InsertPolicy::NoInsert</enum>
-            </property>
-            <property name="duplicatesEnabled">
-             <bool>false</bool>
-            </property>
-            <property name="maxVisibleItems">
-             <number>12</number>
-            </property>
-            <property name="placeholderText">
-             <string>e.g. Republic of Adygea</string>
-            </property>
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <property name="maxVisibleItems">
+            <number>12</number>
+           </property>
+           <property name="insertPolicy">
+            <enum>QComboBox::InsertPolicy::NoInsert</enum>
+           </property>
+           <property name="placeholderText">
+            <string>e.g. Republic of Adygea</string>
+           </property>
+           <property name="duplicatesEnabled">
+            <bool>false</bool>
+           </property>
           </widget>
          </item>
         </layout>
@@ -502,22 +502,22 @@ QStatusBar QLabel {
          </item>
          <item>
           <widget class="QComboBox" name="columnComboBox">
-            <property name="editable">
-             <bool>true</bool>
-            </property>
-            <property name="insertPolicy">
-             <enum>QComboBox::InsertPolicy::NoInsert</enum>
-            </property>
-            <property name="duplicatesEnabled">
-             <bool>false</bool>
-            </property>
-            <property name="maxVisibleItems">
-             <number>12</number>
-            </property>
-            <property name="placeholderText">
-             <string>Select column</string>
-            </property>
-           </widget>
+           <property name="editable">
+            <bool>false</bool>
+           </property>
+           <property name="maxVisibleItems">
+            <number>12</number>
+           </property>
+           <property name="insertPolicy">
+            <enum>QComboBox::InsertPolicy::NoInsert</enum>
+           </property>
+           <property name="placeholderText">
+            <string>Select column</string>
+           </property>
+           <property name="duplicatesEnabled">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
