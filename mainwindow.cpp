@@ -44,10 +44,7 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
     if (event != nullptr && event->type() == QEvent::MouseButtonPress) {
         if (ui->regionComboBox != nullptr && watched == ui->regionComboBox->lineEdit())
             ui->regionComboBox->showPopup();
-        else if (ui->columnComboBox != nullptr && watched == ui->columnComboBox->lineEdit())
-            ui->columnComboBox->showPopup();
     }
-
     return QMainWindow::eventFilter(watched, event);
 }
 
@@ -55,13 +52,8 @@ void MainWindow::setupConnections() {
     connect(ui->chooseFileButton, &QPushButton::clicked, this, &MainWindow::chooseFileClicked);
     connect(ui->loadDataButton, &QPushButton::clicked, this, &MainWindow::loadDataClicked);
     connect(ui->calculateMetricsButton, &QPushButton::clicked, this, &MainWindow::calculateMetricsClicked);
-    connect(ui->regionComboBox, QOverload<int>::of(&QComboBox::activated), this, [this](int) {
-        regionEditingFinished();
-    });
-    if (ui->regionComboBox->lineEdit() != nullptr) {
-        connect(ui->regionComboBox->lineEdit(), &QLineEdit::editingFinished,
-                this, &MainWindow::regionEditingFinished);
-    }
+    connect(ui->regionComboBox, QOverload<int>::of(&QComboBox::activated),this, &MainWindow::regionEditingFinished);
+    connect(ui->regionComboBox->lineEdit(), &QLineEdit::editingFinished,this, &MainWindow::regionEditingFinished);
     connect(ui->tableWidget, &QTableWidget::itemDoubleClicked, this, &MainWindow::tableItemDoubleClicked);
 }
 
@@ -80,6 +72,7 @@ void MainWindow::setupColumnComboBox() {
     ui->columnComboBox->addItem("Death", COL_DEATH_RATE);
     ui->columnComboBox->addItem("Weight", COL_GDW);
     ui->columnComboBox->addItem("Urban", COL_URBANIZATION);
+    ui->columnComboBox->setCurrentIndex(0);
 }
 
 void MainWindow::setupRegionComboBox() {
@@ -90,13 +83,10 @@ void MainWindow::setupRegionComboBox() {
 }
 
 void MainWindow::reloadRegionComboBox() {
-    QString currentText = ui->regionComboBox->currentText().trimmed();
     Iterator it;
 
+    setupRegionComboBox();
     if (context.list != nullptr) {
-        ui->regionComboBox->clear();
-        ui->regionComboBox->addItem("");
-
         it = begin(context.list);
         while (isSet(&it)) {
             DemographyRecord* record = (DemographyRecord*)get(&it);
@@ -116,26 +106,12 @@ void MainWindow::reloadRegionComboBox() {
             }
             next(&it);
         }
-    } else {
-        ui->regionComboBox->clear();
-        ui->regionComboBox->addItem("");
     }
-
-    if (currentText.isEmpty())
-        ui->regionComboBox->setCurrentIndex(0);
-    else
-        ui->regionComboBox->setEditText(currentText);
 }
 
 Column MainWindow::selectedColumn() const {
-    QString text = ui->columnComboBox->currentText().trimmed();
-
-    for (int i = 0; i < ui->columnComboBox->count(); i++) {
-        if (ui->columnComboBox->itemText(i).compare(text, Qt::CaseInsensitive) == 0)
-            return (Column)ui->columnComboBox->itemData(i).toInt();
-    }
-
-    return (Column)0;
+    int selectedIndex = ui->columnComboBox->currentIndex();
+    return selectedIndex >= 0 ? static_cast<Column>(ui->columnComboBox->itemData(selectedIndex).toInt()): COL_YEAR;
 }
 
 int MainWindow::hasLoadedData() const {
@@ -200,7 +176,7 @@ void MainWindow::showLoadSummary() {
 
 
 void MainWindow::fillTable(const QString& regionFilter) {
-    int isRegionEmpty = regionFilter.trimmed().isEmpty() ? 1 : 0;
+    int isRegionEmpty = regionFilter.trimmed().isEmpty();
     int isRegionFound = 0;
     int row = 0;
     Iterator it;
@@ -218,13 +194,13 @@ void MainWindow::fillTable(const QString& regionFilter) {
                 if (!isRegionEmpty)
                     isRegionFound = 1;
                 ui->tableWidget->insertRow(row);
-                ui->tableWidget->setItem(row, COL_YEAR - 1, new QTableWidgetItem(QString::number(record->year)));
-                ui->tableWidget->setItem(row, COL_REGION - 1, new QTableWidgetItem(recordRegion));
-                ui->tableWidget->setItem(row, COL_NPG - 1, new QTableWidgetItem(QString::number(record->naturalPopulationGrowth)));
-                ui->tableWidget->setItem(row, COL_BIRTH_RATE - 1, new QTableWidgetItem(QString::number(record->birthRate)));
-                ui->tableWidget->setItem(row, COL_DEATH_RATE - 1, new QTableWidgetItem(QString::number(record->deathRate)));
-                ui->tableWidget->setItem(row, COL_GDW - 1, new QTableWidgetItem(QString::number(record->generalDemographicWeight)));
-                ui->tableWidget->setItem(row, COL_URBANIZATION - 1, new QTableWidgetItem(QString::number(record->urbanization)));
+                ui->tableWidget->setItem(row, COL_YEAR, new QTableWidgetItem(QString::number(record->year)));
+                ui->tableWidget->setItem(row, COL_REGION, new QTableWidgetItem(recordRegion));
+                ui->tableWidget->setItem(row, COL_NPG, new QTableWidgetItem(QString::number(record->naturalPopulationGrowth)));
+                ui->tableWidget->setItem(row, COL_BIRTH_RATE, new QTableWidgetItem(QString::number(record->birthRate)));
+                ui->tableWidget->setItem(row, COL_DEATH_RATE, new QTableWidgetItem(QString::number(record->deathRate)));
+                ui->tableWidget->setItem(row, COL_GDW, new QTableWidgetItem(QString::number(record->generalDemographicWeight)));
+                ui->tableWidget->setItem(row, COL_URBANIZATION, new QTableWidgetItem(QString::number(record->urbanization)));
                 row++;
             }
         }
@@ -291,6 +267,6 @@ void MainWindow::regionEditingFinished() {
 }
 
 void MainWindow::tableItemDoubleClicked(QTableWidgetItem *item) {
-    if (item && item->column() == COL_REGION - 1)
+    if (item && item->column() == COL_REGION)
         QGuiApplication::clipboard()->setText(item->text());
 }

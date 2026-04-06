@@ -4,7 +4,7 @@
 #define REGION_SIZE 128
 
 typedef enum {
-    COL_YEAR = 1,
+    COL_YEAR,
     COL_REGION,
     COL_NPG,
     COL_BIRTH_RATE,
