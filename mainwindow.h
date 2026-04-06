@@ -17,6 +17,7 @@ class MainWindow;
 QT_END_NAMESPACE
 
 class QEvent;
+class QMimeData;
 
 class MainWindow : public QMainWindow
 {
@@ -40,10 +41,14 @@ private:
     AppContext context;
 
     void setupConnections();
+    void setupDragAndDrop();
     void setupTable();
     void setupColumnComboBox();
     void setupRegionComboBox();
     void reloadRegionComboBox();
+    void selectFile(const QString& filePath);
+    void unloadData();
+    QString droppedFilePath(const QMimeData* mimeData) const;
     void setLoadedState();
     int hasLoadedData() const;
     Column selectedColumn() const;

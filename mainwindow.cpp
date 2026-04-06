@@ -3,15 +3,21 @@
 
 #include <QClipboard>
 #include <QComboBox>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
 #include <QEvent>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QGuiApplication>
 #include <QHeaderView>
 #include <QLineEdit>
+#include <QMimeData>
 #include <QMessageBox>
 #include <QStatusBar>
 #include <QStandardPaths>
 #include <QTableWidgetItem>
+#include <QUrl>
 
 #include <string>
 
@@ -29,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupColumnComboBox();
     setupRegionComboBox();
     setupConnections();
+    setupDragAndDrop();
     setLoadedState();
     clearMetricFields();
     statusBar()->showMessage(statusText(context.status), STATUS_BAR_MESSAGE_TIMEOUT_MS);
@@ -41,11 +48,53 @@ MainWindow::~MainWindow()
 }
 
 bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
-    if (event != nullptr && event->type() == QEvent::MouseButtonPress) {
-        if (ui->regionComboBox != nullptr && watched == ui->regionComboBox->lineEdit())
-            ui->regionComboBox->showPopup();
+    int isHandled = 0;
+    bool result = false;
+    int isDropTarget = watched == ui->contentStackedWidget
+                       || watched == ui->emptyPage
+                       || watched == ui->tablePage
+                       || watched == ui->tableWidget
+                       || watched == ui->tableWidget->viewport()
+                       || watched == ui->emptyPageText
+                       || watched == ui->icon_4;
+
+    if (event != nullptr) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            if (ui->regionComboBox != nullptr && watched == ui->regionComboBox->lineEdit())
+                ui->regionComboBox->showPopup();
+        } else if (isDropTarget && event->type() == QEvent::DragEnter) {
+            QDragEnterEvent* dragEvent = static_cast<QDragEnterEvent*>(event);
+            QString filePath = droppedFilePath(dragEvent->mimeData());
+
+            if (!filePath.isEmpty()) {
+                dragEvent->acceptProposedAction();
+                isHandled = 1;
+            }
+        } else if (isDropTarget && event->type() == QEvent::DragMove) {
+            QDragMoveEvent* dragEvent = static_cast<QDragMoveEvent*>(event);
+            QString filePath = droppedFilePath(dragEvent->mimeData());
+
+            if (!filePath.isEmpty()) {
+                dragEvent->acceptProposedAction();
+                isHandled = 1;
+            }
+        } else if (isDropTarget && event->type() == QEvent::Drop) {
+            QDropEvent* dropEvent = static_cast<QDropEvent*>(event);
+            QString filePath = droppedFilePath(dropEvent->mimeData());
+
+            if (!filePath.isEmpty()) {
+                selectFile(filePath);
+                dropEvent->acceptProposedAction();
+                isHandled = 1;
+            }
+        }
     }
-    return QMainWindow::eventFilter(watched, event);
+
+    if (!isHandled)
+        result = QMainWindow::eventFilter(watched, event);
+    else
+        result = true;
+    return result;
 }
 
 void MainWindow::setupConnections() {
@@ -55,6 +104,24 @@ void MainWindow::setupConnections() {
     connect(ui->regionComboBox, QOverload<int>::of(&QComboBox::activated),this, &MainWindow::regionEditingFinished);
     connect(ui->regionComboBox->lineEdit(), &QLineEdit::editingFinished,this, &MainWindow::regionEditingFinished);
     connect(ui->tableWidget, &QTableWidget::itemDoubleClicked, this, &MainWindow::tableItemDoubleClicked);
+}
+
+void MainWindow::setupDragAndDrop() {
+    ui->contentStackedWidget->setAcceptDrops(true);
+    ui->emptyPage->setAcceptDrops(true);
+    ui->tablePage->setAcceptDrops(true);
+    ui->tableWidget->setAcceptDrops(true);
+    ui->tableWidget->viewport()->setAcceptDrops(true);
+    ui->emptyPageText->setAcceptDrops(true);
+    ui->icon_4->setAcceptDrops(true);
+
+    ui->contentStackedWidget->installEventFilter(this);
+    ui->emptyPage->installEventFilter(this);
+    ui->tablePage->installEventFilter(this);
+    ui->tableWidget->installEventFilter(this);
+    ui->tableWidget->viewport()->installEventFilter(this);
+    ui->emptyPageText->installEventFilter(this);
+    ui->icon_4->installEventFilter(this);
 }
 
 void MainWindow::setupTable() {
@@ -107,6 +174,44 @@ void MainWindow::reloadRegionComboBox() {
             next(&it);
         }
     }
+}
+
+void MainWindow::selectFile(const QString& filePath) {
+    if (!filePath.isEmpty()) {
+        unloadData();
+        ui->filePathLineEdit->setText(filePath);
+    }
+}
+
+void MainWindow::unloadData() {
+    if (hasLoadedData()) {
+        doOperation(DISPOSE, &context, nullptr);
+        doOperation(INITIALIZE, &context, nullptr);
+    }
+
+    reloadRegionComboBox();
+    setLoadedState();
+    clearMetricFields();
+}
+
+QString MainWindow::droppedFilePath(const QMimeData* mimeData) const {
+    QString filePath;
+
+    if (mimeData != nullptr && mimeData->hasUrls()) {
+        const QList<QUrl> urls = mimeData->urls();
+        for (const QUrl& url : urls) {
+            if (url.isLocalFile()) {
+                QString droppedPath = url.toLocalFile();
+                QFileInfo fileInfo(droppedPath);
+                if (fileInfo.exists() && fileInfo.isFile()) {
+                    filePath = droppedPath;
+                    break;
+                }
+            }
+        }
+    }
+
+    return filePath;
 }
 
 Column MainWindow::selectedColumn() const {
@@ -219,8 +324,7 @@ void MainWindow::chooseFileClicked() {
         QStandardPaths::writableLocation(QStandardPaths::DesktopLocation),
         "CSV Files (*.csv);;All Files (*)");
 
-    if (!fileName.isEmpty())
-        ui->filePathLineEdit->setText(fileName);
+    selectFile(fileName);
 }
 
 void MainWindow::loadDataClicked() {
