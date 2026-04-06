@@ -267,21 +267,23 @@ QString MainWindow::statusText(Status status) const {
 
 void MainWindow::showLoadSummary() {
     size_t totalRows = context.parseInfo.accepted + context.parseInfo.rejected;
-    QString summary = QString("Total rows: %1\nValid rows: %2\nInvalid rows: %3")
+    QString summaryHtml = QString(
+                              "<div style='font-size: 20px; font-weight: 700; line-height: 1.45;'>"
+                              "<div style='color: #111111;'>Total rows: %1</div>"
+                              "<div style='color: #1f8f3a;'>Valid rows: %2</div>"
+                              "<div style='color: #c73535;'>Invalid rows: %3</div>"
+                              "</div>")
                           .arg(totalRows)
                           .arg(context.parseInfo.accepted)
                           .arg(context.parseInfo.rejected);
     QMessageBox messageBox(this);
     messageBox.setIcon(QMessageBox::Information);
     messageBox.setWindowTitle("Load Result");
-    messageBox.setText(summary);
-    messageBox.setStandardButtons(QMessageBox::Ok);
+    messageBox.setText(summaryHtml);
+    messageBox.resize(580, 320);
     messageBox.setStyleSheet(
-        "QMessageBox { background: #f4f8ff; color: #253246; }"
-        "QLabel { color: #2f3d50; }"
-        "QPushButton { background: #ffffff; color: #2c3f59; border: 1px solid #93a8c6; border-radius: 10px; padding: 6px 14px; min-width: 84px; }"
-        "QPushButton:hover { background: #f5f9ff; }"
-        "QPushButton:pressed { background: #eaf2ff; }");
+        "QPushButton { background: #ffffff; color: #2c3f59; border: 1px solid #93a8c6; border-radius: 10px; padding: 8px 18px; min-width: 96px; font-weight: 600; }"
+        "QPushButton:hover { background: #f5f9ff; }");
     messageBox.exec();
 }
 
@@ -301,7 +303,7 @@ void MainWindow::fillTable(const QString& regionFilter) {
         DemographyRecord* record = (DemographyRecord*)get(&it);
         if (record != nullptr) {
             QString recordRegion = QString::fromLocal8Bit(record->region);
-            if (isRegionEmpty || recordRegion.compare(regionFilter, Qt::CaseInsensitive) == 0) {
+            if (isRegionEmpty || !recordRegion.compare(regionFilter, Qt::CaseInsensitive)) {
                 if (!isRegionEmpty)
                     isRegionFound = 1;
                 ui->tableWidget->insertRow(row);
