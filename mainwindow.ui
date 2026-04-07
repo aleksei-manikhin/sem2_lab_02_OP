@@ -85,20 +85,16 @@ QComboBox#regionComboBox,
 QComboBox#columnComboBox {
     background: rgba(255,255,255,0.65);
     border: 1px solid #b8c8db;
-    border-radius: 10px;
     padding: 0 10px;
     color: #2a3d54;
+
 }
 QComboBox#regionComboBox:focus,
 QComboBox#columnComboBox:focus {
     border: 2px solid #5cc7cb;
     background: #ffffff;
 }
-QComboBox#regionComboBox::drop-down,
-QComboBox#columnComboBox::drop-down {
-    border: none;
-    width: 24px;
-}
+
 
 QPushButton#loadDataButton,
 QPushButton#calculateMetricsButton {
@@ -401,6 +397,11 @@ QStatusBar QLabel {
          </item>
          <item>
           <widget class="QComboBox" name="regionComboBox">
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
            <property name="editable">
             <bool>true</bool>
            </property>
@@ -475,6 +476,11 @@ QStatusBar QLabel {
          </item>
          <item>
           <widget class="QComboBox" name="columnComboBox">
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
            <property name="editable">
             <bool>false</bool>
            </property>
@@ -505,13 +511,13 @@ QStatusBar QLabel {
         </property>
         <property name="minimumSize">
          <size>
-          <width>220</width>
+          <width>216</width>
           <height>56</height>
          </size>
         </property>
         <property name="font">
          <font>
-          <pointsize>13</pointsize>
+          <pointsize>14</pointsize>
           <bold>true</bold>
          </font>
         </property>
