@@ -20,9 +20,6 @@
 
 #include <string>
 
-#define COLUMN_COUNT 7
-#define STATUS_BAR_MESSAGE_TIMEOUT_MS 4000
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)

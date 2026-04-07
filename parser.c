@@ -22,5 +22,5 @@ int parseDemographyLine(const char* line, DemographyRecord* record) {
                            &record->birthRate,
                            &record->deathRate,
                            &record->generalDemographicWeight,
-                           &record->urbanization) == FIELDS_COUNT;
+                           &record->urbanization) == COLUMN_COUNT;
 }

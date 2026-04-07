@@ -4,6 +4,7 @@
 extern "C" {
 #include "entrypoint.h"
 #include "iterator.h"
+#include "appcontext.h"
 }
 
 #include <QMainWindow>

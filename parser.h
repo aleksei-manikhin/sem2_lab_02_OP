@@ -2,6 +2,7 @@
 #define PARSER_H
 
 #include "demography_record.h"
+#include "appcontext.h"
 
 #ifdef __cplusplus
 extern "C" {

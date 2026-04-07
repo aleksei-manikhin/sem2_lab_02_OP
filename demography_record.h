@@ -1,7 +1,7 @@
 #ifndef DEMOGRAPHY_RECORD_H
 #define DEMOGRAPHY_RECORD_H
 
-#define REGION_SIZE 128
+#include "appcontext.h"
 
 typedef enum {
     COL_YEAR,

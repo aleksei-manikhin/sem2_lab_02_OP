@@ -3,6 +3,13 @@
 
 #include "list.h"
 
+enum {
+    REGION_SIZE = 128,
+    LINE_SIZE = 1024,
+    COLUMN_COUNT = 7,
+    STATUS_BAR_MESSAGE_TIMEOUT_MS = 4000,
+};
+
 typedef enum {
     OK,
     ERR_FILE_OPEN,

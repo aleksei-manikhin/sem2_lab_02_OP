@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#define LINE_SIZE 1024
+
 
 Status loadDemographyData(const char* filePath, List* list, RowCounts* info);
 
