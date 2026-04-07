@@ -9,5 +9,6 @@
         <file>icons/region.svg</file>
         <file>icons/selectFile.svg</file>
         <file>icons/table.svg</file>
+        <file>icons/info.svg</file>
     </qresource>
 </RCC>

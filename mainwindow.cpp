@@ -9,6 +9,7 @@
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QHeaderView>
+#include <QIcon>
 #include <QLineEdit>
 #include <QMimeData>
 #include <QMessageBox>
@@ -27,6 +28,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setWindowIcon(QIcon(":/icons/icons/CSV.svg"));
+    setWindowTitle("CSV Worker");
 
     doOperation(INITIALIZE, &context, nullptr);
     setupTable();
@@ -277,7 +280,10 @@ void MainWindow::showLoadSummary() {
                           .arg(context.parseInfo.accepted)
                           .arg(context.parseInfo.rejected);
     QMessageBox messageBox(this);
-    messageBox.setIcon(QMessageBox::Information);
+    QIcon csvIcon(":/icons/icons/CSV.svg");
+    QIcon infoIcon(":/icons/icons/info.svg");
+    messageBox.setWindowIcon(csvIcon);
+    messageBox.setIconPixmap(infoIcon.pixmap(44, 44));
     messageBox.setWindowTitle("Load Result");
     messageBox.setText(summaryHtml);
     messageBox.resize(580, 320);
