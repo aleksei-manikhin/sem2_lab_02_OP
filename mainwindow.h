@@ -48,7 +48,6 @@ private:
     void setupColumnComboBox();
     void setupRegionComboBox();
     void reloadRegionComboBox();
-    int isTableLayoutWidget(const QObject* watched) const;
     int isDropWidget(const QObject* watched) const;
     int handleDragDropEvent(const QObject* watched, QEvent* event);
     int acceptDropEvent(QDropEvent* dropEvent, int shouldSelectFile);

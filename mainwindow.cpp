@@ -52,31 +52,12 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
         if (event->type() == QEvent::MouseButtonPress) {
             if (ui->regionComboBox != nullptr && watched == ui->regionComboBox->lineEdit())
                 ui->regionComboBox->showPopup();
-        } else if (isDropWidget(watched))
+        } else if (isDropWidget(watched) || watched == ui->centralwidget)
             isHandled = handleDragDropEvent(watched, event);
     }
 
     return isHandled;
 }
-/*
-int MainWindow::isTableLayoutWidget(const QObject* watched) const {
-    int result = watched == ui->contentStackedWidget
-                 || watched == ui->emptyPage
-                 || watched == ui->tablePage
-                 || watched == ui->tableWidget
-                 || watched == ui->tableWidget->viewport()
-                 || watched == ui->emptyPageText
-                 || watched == ui->icon_4;
-    return result;
-}
-
-int MainWindow::isDropWidget(const QObject* watched) const {
-    int result = isTableLayoutWidget(watched)
-                 || watched == ui->centralwidget;
-
-    return result;
-}
-*/
 
 int MainWindow::isDropWidget(const QObject* watched) const {
     return watched == ui->contentStackedWidget
@@ -90,17 +71,26 @@ int MainWindow::isDropWidget(const QObject* watched) const {
 
 int MainWindow::handleDragDropEvent(const QObject* watched, QEvent* event) {
     int isHandled = 0;
+    int isTableArea = isDropWidget(watched);
 
     if (event != nullptr) {
         if (event->type() == QEvent::DragEnter || event->type() == QEvent::DragMove) {
-            isHandled = acceptDropEvent(static_cast<QDropEvent*>(event), 0);
-            setDropHintVisible(isHandled && isDropWidget(watched));
+            if (isTableArea && (isHandled = acceptDropEvent((QDropEvent*)event, 0)))
+                setDropHintVisible(1);
+            else {
+                setDropHintVisible(0);
+                ((QDropEvent*)event)->ignore();
+                isHandled = 1;
+            }
         } else if (event->type() == QEvent::Drop) {
-            isHandled = acceptDropEvent(static_cast<QDropEvent*>(event), 1);
-            setDropHintVisible(0);
+            if (isTableArea && (isHandled = acceptDropEvent((QDropEvent*)event, 1)))
+                setDropHintVisible(0);
+            else {
+                ((QDropEvent*)event)->ignore();
+                isHandled = 1;
+            }
         }
     }
-
     return isHandled;
 }
 
