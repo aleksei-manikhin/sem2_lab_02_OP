@@ -53,13 +53,13 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
             if (ui->regionComboBox != nullptr && watched == ui->regionComboBox->lineEdit())
                 ui->regionComboBox->showPopup();
         } else if (isDropWidget(watched))
-            isHandled = handleDragDropEvent(event);
+            isHandled = handleDragDropEvent(watched, event);
     }
 
     return isHandled;
 }
-
-int MainWindow::isDropWidget(const QObject* watched) const {
+/*
+int MainWindow::isTableLayoutWidget(const QObject* watched) const {
     int result = watched == ui->contentStackedWidget
                  || watched == ui->emptyPage
                  || watched == ui->tablePage
@@ -70,14 +70,35 @@ int MainWindow::isDropWidget(const QObject* watched) const {
     return result;
 }
 
-int MainWindow::handleDragDropEvent(QEvent* event) {
+int MainWindow::isDropWidget(const QObject* watched) const {
+    int result = isTableLayoutWidget(watched)
+                 || watched == ui->centralwidget;
+
+    return result;
+}
+*/
+
+int MainWindow::isDropWidget(const QObject* watched) const {
+    return watched == ui->contentStackedWidget
+           || watched == ui->emptyPage
+           || watched == ui->tablePage
+           || watched == ui->tableWidget
+           || watched == ui->tableWidget->viewport()
+           || watched == ui->emptyPageText
+           || watched == ui->icon_4;
+}
+
+int MainWindow::handleDragDropEvent(const QObject* watched, QEvent* event) {
     int isHandled = 0;
 
     if (event != nullptr) {
-        if (event->type() == QEvent::DragEnter || event->type() == QEvent::DragMove)
+        if (event->type() == QEvent::DragEnter || event->type() == QEvent::DragMove) {
             isHandled = acceptDropEvent(static_cast<QDropEvent*>(event), 0);
-        else if (event->type() == QEvent::Drop)
+            setDropHintVisible(isHandled && isDropWidget(watched));
+        } else if (event->type() == QEvent::Drop) {
             isHandled = acceptDropEvent(static_cast<QDropEvent*>(event), 1);
+            setDropHintVisible(0);
+        }
     }
 
     return isHandled;
@@ -96,6 +117,14 @@ int MainWindow::acceptDropEvent(QDropEvent* dropEvent, int shouldSelectFile) {
         }
     }
     return isHandled;
+}
+
+void MainWindow::setDropHintVisible(int isVisible) {
+    if (hasLoadedData()) {
+        QWidget* page = isVisible ? ui->emptyPage : ui->tablePage;
+        if (ui->contentStackedWidget->currentWidget() != page)
+            ui->contentStackedWidget->setCurrentWidget(page);
+    }
 }
 
 QString MainWindow::droppedFilePath(const QMimeData* mimeData) const {
@@ -127,8 +156,10 @@ void MainWindow::setupConnections() {
 }
 
 void MainWindow::setupDragAndDrop() {
+    ui->centralwidget->setAcceptDrops(true);
     ui->tableWidget->viewport()->setAcceptDrops(true);
 
+    ui->centralwidget->installEventFilter(this);
     ui->contentStackedWidget->installEventFilter(this);
     ui->emptyPage->installEventFilter(this);
     ui->tablePage->installEventFilter(this);
