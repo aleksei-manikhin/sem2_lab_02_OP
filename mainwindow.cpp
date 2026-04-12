@@ -138,7 +138,7 @@ QString MainWindow::droppedFilePath(const QMimeData* mimeData) const {
 
 void MainWindow::setupConnections() {
     connect(ui->chooseFileButton, &QPushButton::clicked, this, &MainWindow::chooseFileClicked);
-    connect(ui->loadDataButton, &QPushButton::clicked, this, &MainWindow::loadDataClicked);
+    //connect(ui->loadDataButton, &QPushButton::clicked, this, &MainWindow::loadDataClicked);
     connect(ui->calculateMetricsButton, &QPushButton::clicked, this, &MainWindow::calculateMetricsClicked);
     connect(ui->regionComboBox, QOverload<int>::of(&QComboBox::activated),this, &MainWindow::regionEditingFinished);
     connect(ui->regionComboBox->lineEdit(), &QLineEdit::editingFinished,this, &MainWindow::regionEditingFinished);
@@ -215,6 +215,7 @@ void MainWindow::selectFile(const QString& filePath) {
     if (!filePath.isEmpty()) {
         unloadData();
         ui->filePathLineEdit->setText(filePath);
+        loadDataClicked();
     }
 }
 
