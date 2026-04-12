@@ -4,13 +4,13 @@
 #include "appcontext.h"
 
 typedef enum {
-    COL_YEAR,
-    COL_REGION,
-    COL_NPG,
-    COL_BIRTH_RATE,
-    COL_DEATH_RATE,
-    COL_GDW,
-    COL_URBANIZATION,
+    YEAR,
+    REGION,
+    NPG,
+    BIRTH_RATE,
+    DEATH_RATE,
+    GDW,
+    URBANIZATION,
 } Column;
 
 
@@ -26,3 +26,4 @@ typedef struct
 } DemographyRecord;
 
 #endif // DEMOGRAPHY_RECORD_H
+

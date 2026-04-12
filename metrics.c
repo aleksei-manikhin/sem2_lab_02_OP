@@ -14,7 +14,7 @@ void fillMetricsFromSorted(Metrics* metrics, const List* sortedValues);
 
 int isNumericColumn(Column column) {
   int isValid = 0;
-  if (column >= COL_YEAR && column <= COL_URBANIZATION && column != COL_REGION)
+  if (column >= YEAR && column <= URBANIZATION && column != REGION)
     isValid = 1;
 
   return isValid;
@@ -49,18 +49,18 @@ double getColumnValue(const DemographyRecord* record, Column column) {
 
   if (record != NULL) {
     switch (column) {
-      case COL_YEAR:
+      case YEAR:
         value = (double)record->year; //
         break;
-      case COL_NPG: value = record->naturalPopulationGrowth;
+      case NPG: value = record->naturalPopulationGrowth;
       break;
-      case COL_BIRTH_RATE: value = record->birthRate;
+      case BIRTH_RATE: value = record->birthRate;
       break;
-      case COL_DEATH_RATE: value = record->deathRate;
+      case DEATH_RATE: value = record->deathRate;
       break;
-      case COL_GDW: value = record->generalDemographicWeight;
+      case GDW: value = record->generalDemographicWeight;
       break;
-      case COL_URBANIZATION: value = record->urbanization;
+      case URBANIZATION: value = record->urbanization;
       break;
       default:
       break;
@@ -117,9 +117,9 @@ Status calculateMetrics(AppContext* context, const char* region, Column column) 
   if (status == OK) {
     sortedValues = initList(sizeof(double));
     if (sortedValues == NULL)
-      status = MEMORY_ERR;
+      status = ERR_MEMORY;
     else if (!insertRegionValues(context, region, column, sortedValues))
-      status = MEMORY_ERR;
+      status = ERR_MEMORY;
     else if (sortedValues->size == 0)
       status = ERR_INVALID_REGION;
     else
@@ -131,3 +131,4 @@ Status calculateMetrics(AppContext* context, const char* region, Column column) 
 
   return status;
 }
+

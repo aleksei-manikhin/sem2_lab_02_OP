@@ -27,7 +27,7 @@ Status prepareListForLoad(AppContext* context) {
   Status status = OK;
   if (context->list == NULL){
     if (!(context->list = initList(sizeof(DemographyRecord))))
-      status = MEMORY_ERR;
+      status = ERR_MEMORY;
   }else
     clearList(context->list);
   return status;
@@ -91,3 +91,4 @@ Status calculateMetricsForRegion(AppContext* context, const char* region, Column
   }
   return status;
 }
+

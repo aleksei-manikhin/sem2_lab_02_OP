@@ -14,7 +14,7 @@ typedef enum {
     OK,
     ERR_FILE_OPEN,
     ERR_INVALID_HEADER,
-    MEMORY_ERR,
+    ERR_MEMORY,
     ERR_EMPTY_DATA,
     ERR_INVALID_REGION,
     ERR_INVALID_COLUMN
@@ -39,3 +39,4 @@ typedef struct {
 } AppContext;
 
 #endif // APP_CONTEXT_H
+

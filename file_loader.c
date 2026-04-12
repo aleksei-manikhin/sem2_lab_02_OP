@@ -44,7 +44,7 @@ Status processLines(FILE* file, List* list, RowCounts* info) {
       if (pushBack(list, &record)) {
         info->accepted++;
       } else {
-        error = MEMORY_ERR;
+        error = ERR_MEMORY;
         break;
       }
     } else {
@@ -54,3 +54,4 @@ Status processLines(FILE* file, List* list, RowCounts* info) {
 
   return error;
 }
+

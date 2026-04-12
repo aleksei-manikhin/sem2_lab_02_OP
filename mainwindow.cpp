@@ -168,12 +168,12 @@ void MainWindow::setupTable() {
 
 void MainWindow::setupColumnComboBox() {
     ui->columnComboBox->clear();
-    ui->columnComboBox->addItem("Year", COL_YEAR);
-    ui->columnComboBox->addItem("Growth", COL_NPG);
-    ui->columnComboBox->addItem("Birth", COL_BIRTH_RATE);
-    ui->columnComboBox->addItem("Death", COL_DEATH_RATE);
-    ui->columnComboBox->addItem("Weight", COL_GDW);
-    ui->columnComboBox->addItem("Urban", COL_URBANIZATION);
+    ui->columnComboBox->addItem("Year", YEAR);
+    ui->columnComboBox->addItem("Growth", NPG);
+    ui->columnComboBox->addItem("Birth", BIRTH_RATE);
+    ui->columnComboBox->addItem("Death", DEATH_RATE);
+    ui->columnComboBox->addItem("Weight", GDW);
+    ui->columnComboBox->addItem("Urban", URBANIZATION);
     ui->columnComboBox->setCurrentIndex(0);
 }
 
@@ -233,7 +233,7 @@ void MainWindow::unloadData() {
 
 Column MainWindow::selectedColumn() const {
     int selectedIndex = ui->columnComboBox->currentIndex();
-    return selectedIndex >= 0 ? static_cast<Column>(ui->columnComboBox->itemData(selectedIndex).toInt()): COL_YEAR;
+    return selectedIndex >= 0 ? static_cast<Column>(ui->columnComboBox->itemData(selectedIndex).toInt()): YEAR;
 }
 
 int MainWindow::hasLoadedData() const {
@@ -267,7 +267,7 @@ QString MainWindow::statusText(Status status) const {
     case ERR_INVALID_HEADER:
         text = "Invalid CSV header";
         break;
-    case MEMORY_ERR:
+    case ERR_MEMORY:
         text = "Memory allocation error";
         break;
     case ERR_EMPTY_DATA:
@@ -343,13 +343,13 @@ void MainWindow::fillTable(const QString& regionFilter) {
 }
 
 void MainWindow::fillTableRow(int row, const DemographyRecord* record, const QString& recordRegion) {
-    ui->tableWidget->setItem(row, COL_YEAR, new QTableWidgetItem(QString::number(record->year)));
-    ui->tableWidget->setItem(row, COL_REGION, new QTableWidgetItem(recordRegion));
-    ui->tableWidget->setItem(row, COL_NPG, new QTableWidgetItem(QString::number(record->naturalPopulationGrowth)));
-    ui->tableWidget->setItem(row, COL_BIRTH_RATE, new QTableWidgetItem(QString::number(record->birthRate)));
-    ui->tableWidget->setItem(row, COL_DEATH_RATE, new QTableWidgetItem(QString::number(record->deathRate)));
-    ui->tableWidget->setItem(row, COL_GDW, new QTableWidgetItem(QString::number(record->generalDemographicWeight)));
-    ui->tableWidget->setItem(row, COL_URBANIZATION, new QTableWidgetItem(QString::number(record->urbanization)));
+    ui->tableWidget->setItem(row, YEAR, new QTableWidgetItem(QString::number(record->year)));
+    ui->tableWidget->setItem(row, REGION, new QTableWidgetItem(recordRegion));
+    ui->tableWidget->setItem(row, NPG, new QTableWidgetItem(QString::number(record->naturalPopulationGrowth)));
+    ui->tableWidget->setItem(row, BIRTH_RATE, new QTableWidgetItem(QString::number(record->birthRate)));
+    ui->tableWidget->setItem(row, DEATH_RATE, new QTableWidgetItem(QString::number(record->deathRate)));
+    ui->tableWidget->setItem(row, GDW, new QTableWidgetItem(QString::number(record->generalDemographicWeight)));
+    ui->tableWidget->setItem(row, URBANIZATION, new QTableWidgetItem(QString::number(record->urbanization)));
 }
 
 void MainWindow::chooseFileClicked() {
@@ -367,7 +367,7 @@ void MainWindow::loadDataClicked() {
     std::string filePath = ui->filePathLineEdit->text().toStdString();
 
     params.str = filePath.c_str();
-    params.column = COL_YEAR;
+    params.column = YEAR;
 
     doOperation(LOAD_DATA, &context, &params);
     statusBar()->showMessage(statusText(context.status), STATUS_BAR_MESSAGE_TIMEOUT_MS);
@@ -406,6 +406,7 @@ void MainWindow::regionEditingFinished() {
 }
 
 void MainWindow::tableItemDoubleClicked(QTableWidgetItem *item) {
-    if (item && item->column() == COL_REGION)
+    if (item && item->column() == REGION)
         QGuiApplication::clipboard()->setText(item->text());
 }
+
