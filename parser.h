@@ -8,8 +8,6 @@
 extern "C" {
 #endif
 
-#define FIELDS_COUNT 7
-
 int validateCsvHeader(const char* headerLine);
 int parseDemographyLine(const char* line, DemographyRecord* record);
 
