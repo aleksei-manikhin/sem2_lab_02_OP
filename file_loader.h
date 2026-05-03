@@ -9,7 +9,6 @@
 extern "C" {
 #endif
 
-
 Status loadDemographyData(const char* filePath, List* list, RowCounts* info);
 
 #ifdef __cplusplus
